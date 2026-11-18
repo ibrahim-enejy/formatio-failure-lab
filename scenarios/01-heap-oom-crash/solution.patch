@@ -1,0 +1,26 @@
+--- a/src/app/routes/article/article.controller.ts
++++ b/src/app/routes/article/article.controller.ts
+@@ -245,11 +245,13 @@ export default router;
+ // FIX: Stream processing with bounded memory allocation
+ export const triggerOOM = async (req: any, res: any) => {
+-  console.log("[Sabotage] Starting massive heap allocation...");
+-  const leakArray: string[] = [];
+-  try {
+-    while (true) {
+-      leakArray.push(Buffer.alloc(10 * 1024 * 1024, 'X').toString());
+-    }
+-  } catch (err: any) {
+-    return res.status(500).json({ error: err.message });
+-  }
++  // Enforce memory boundary and chunk limit
++  const MAX_ALLOWED_CHUNKS = 5;
++  const chunks: Buffer[] = [];
++  for (let i = 0; i < MAX_ALLOWED_CHUNKS; i++) {
++    chunks.push(Buffer.alloc(1024 * 1024, 'X'));
++  }
++  return res.json({
++    status: "ok",
++    allocated_mb: MAX_ALLOWED_CHUNKS,
++    message: "Memory bounded safely to prevent container OOM killer."
++  });
+ };

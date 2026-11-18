@@ -1,0 +1,22 @@
+--- a/src/app/routes/lab/lab.controller.ts
++++ b/src/app/routes/lab/lab.controller.ts
+@@ -62,11 +62,15 @@ export const triggerEventLoopBlock = async (req: Request, res: Response) => {
+   const durationMs = parseInt((req.query.ms as string) || '5000', 10);
+   console.log(`[Sabotage] Blocking Node.js event loop synchronously for ${durationMs}ms...`);
+-  const start = Date.now();
+-  while (Date.now() - start < durationMs) {
+-    // Busy loop starving all other incoming HTTP requests
+-    Math.random() * Math.random();
+-  }
++  // FIX: Yield execution back to the event loop or offload to Worker Threads
++  const start = Date.now();
++  const chunkedWork = () => new Promise<void>((resolve) => {
++    const step = () => {
++      if (Date.now() - start >= durationMs) return resolve();
++      setImmediate(step); // Yields back to handle incoming I/O & health checks
++    };
++    step();
++  });
++  await chunkedWork();
+   return res.json({
+     status: 'resolved',

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: failure-lab-postgres
+    environment:
+      POSTGRES_USER: formatio
+      POSTGRES_PASSWORD: formatio_secret_password
+      POSTGRES_DB: realworld
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U formatio -d realworld"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  node-express:
+    build:
+      context: ./apps/node-express
+      dockerfile: Dockerfile
+    container_name: failure-lab-node-express
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://formatio:formatio_secret_password@postgres:5432/realworld?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  python-fastapi:
+    build:
+      context: ./apps/python-fastapi
+      dockerfile: Dockerfile
+    container_name: failure-lab-python-fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+
+  go-gin:
+    build:
+      context: ./apps/go-gin
+      dockerfile: Dockerfile
+    container_name: failure-lab-go-gin
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+
+volumes:
+  pgdata:

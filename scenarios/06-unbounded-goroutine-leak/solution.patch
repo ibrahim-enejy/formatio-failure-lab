@@ -1,0 +1,19 @@
+--- a/main.go
++++ b/main.go
+@@ -82,10 +82,15 @@ func main() {
+ 	r.POST("/api/lab/scenarios/06-goroutine-leak", func(c *gin.Context) {
++		// FIX: Use Context with Timeout to guarantee goroutine termination
+ 		for i := 0; i < count; i++ {
+-			go func() {
+-				ch := make(chan struct{})
+-				<-ch
+-			}()
++			go func(ctx context.Context) {
++				select {
++				case <-time.After(1 * time.Second):
++					return
++				case <-ctx.Done():
++					return
++				}
++			}(c.Request.Context())
+ 		}

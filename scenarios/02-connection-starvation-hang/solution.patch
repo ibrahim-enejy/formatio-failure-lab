@@ -1,0 +1,22 @@
+--- a/src/app/routes/article/article.controller.ts
++++ b/src/app/routes/article/article.controller.ts
+@@ -258,8 +258,15 @@ export default router;
+ // FIX: Enforce strict AbortController timeout & graceful fallback
+ export const triggerHang = async (req: any, res: any) => {
+-  console.log("[Sabotage] Simulating 15-second 3rd-party API degradation...");
+-  await new Promise((resolve) => setTimeout(resolve, 15000));
+-  return res.json({ 
+-    message: "Fraud API finally responded, but the client already disconnected." 
+-  });
++  const TIMEOUT_MS = 2500;
++  try {
++    const result = await Promise.race([
++      new Promise((resolve) => setTimeout(resolve, 15000)),
++      new Promise((_, reject) => setTimeout(() => reject(new Error("Upstream timeout")), TIMEOUT_MS))
++    ]);
++    return res.json({ status: "success", data: result });
++  } catch (err: any) {
++    // Graceful degradation instead of connection starvation
++    return res.status(504).json({ error: "Upstream service timeout (degraded safely after 2.5s)" });
++  }
+ };
