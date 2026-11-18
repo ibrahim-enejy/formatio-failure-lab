@@ -64,7 +64,7 @@ graph LR
 ```
 
 1. **Fork this repository** to your personal GitHub account.
-2. Log in to [Formatio Cloud](https://app.formatio.cloud).
+2. Log in to the [Formatio Cloud Dashboard](https://formatio.cloud/dashboard).
 3. Click **New Service** → select your forked repository.
 4. Set the **Root Directory** to your chosen app:
    - For Node.js: `apps/node-express`
