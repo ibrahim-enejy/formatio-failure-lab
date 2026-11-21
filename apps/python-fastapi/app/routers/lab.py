@@ -30,6 +30,7 @@ async def get_lab_status():
         },
         "scenarios": {
             "01-heap-oom": "POST /api/lab/scenarios/01-oom",
+            "02-connection-hang": "POST /api/lab/scenarios/02-hang",
             "05-postgres-pool-lockup": "POST /api/lab/scenarios/05-pool-lockup",
             "07-asyncio-cpu-starvation": "POST /api/lab/scenarios/07-asyncio-cpu-starvation",
         },
@@ -67,6 +68,7 @@ async def trigger_asyncio_cpu_starvation(duration_ms: int = Query(5000, alias="m
     }
 
 
+@router.post("/scenarios/02-hang")
 @router.post("/scenarios/05-pool-lockup")
 async def trigger_pool_lockup():
     """SABOTAGE: Simulated connection starvation holding worker sockets"""

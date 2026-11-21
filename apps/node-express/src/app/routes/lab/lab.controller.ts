@@ -70,6 +70,7 @@ export const getLabStatus = async (req: Request, res: Response) => {
       '02-connection-hang': 'POST /api/lab/scenarios/02-hang or GET /api/articles/sabotage/hang',
       '03-unhandled-rejection': 'POST /api/lab/scenarios/03-unhandled-rejection',
       '04-event-loop-block': 'POST /api/lab/scenarios/04-event-loop-block',
+      '05-pool-lockup': 'POST /api/lab/scenarios/05-pool-lockup',
       '08-healthcheck': 'GET /healthz (503 when SIMULATE_BAD_HEALTHCHECK=true)',
       '09-persistent-storage': 'POST|GET /api/lab/storage',
       '12-regression': 'POST /api/lab/scenarios/12-regression',
@@ -211,6 +212,7 @@ router.all('/lab/scenarios/01-oom', triggerOOM);
 router.all('/lab/scenarios/02-hang', triggerHang);
 router.all('/lab/scenarios/03-unhandled-rejection', triggerUnhandledRejection);
 router.all('/lab/scenarios/04-event-loop-block', triggerEventLoopBlock);
+router.all('/lab/scenarios/05-pool-lockup', triggerHang);
 router.post('/lab/scenarios/12-regression', triggerRegression);
 router.post('/lab/scenarios/14-secret-crash', triggerSecretCrash);
 

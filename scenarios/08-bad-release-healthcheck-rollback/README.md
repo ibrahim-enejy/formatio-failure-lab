@@ -42,6 +42,7 @@ Formatio runs **start-first** rolling updates paired with healthcheck gating acr
    ```
    *(Or push a commit changing `HOST` to `127.0.0.1` so ingress probes cannot reach the container port.)*
 3. Click **Deploy / Redeploy** (and probe `/healthz` with `trigger.sh`).
+   > **Builder note:** HTTP `/healthz` gating runs automatically on **Dockerfile** builds (via embedded `HEALTHCHECK`) or when `healthcheck_path: "/healthz"` is set via Formatio's HTTP API. On default **Railpack** builds without an explicit `healthcheck_path`, test rollout blocking by pushing a commit binding `HOST=127.0.0.1` or raising a startup exception instead.
 4. Watch Formatio surface `Failed` healthcheck status on **Deployments** alongside startup logs on **Logs › Runtime**.
 5. Clear `SIMULATE_BAD_HEALTHCHECK` (or revert the bind commit) and click **Rollback** on your earlier `Successful` Git deployment on **Deployments** (or call `/mcp` `rollback_application`).
 
