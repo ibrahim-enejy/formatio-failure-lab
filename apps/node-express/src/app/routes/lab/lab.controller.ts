@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import { triggerOOM, triggerHang } from '../article/article.controller';
 import { calculateCheckoutTotal } from './discount.service';
 
@@ -172,9 +172,17 @@ export const readStorageMarker = async (_req: Request, res: Response) => {
  * SCENARIO 12: Deterministic 1-Line Checkout Regression
  * POST /api/lab/scenarios/12-regression
  */
-export const triggerRegression = async (req: Request, res: Response) => {
-  const result = calculateCheckoutTotal(req.body || {});
-  return res.json({ status: 'ok', result });
+export const triggerRegression = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = calculateCheckoutTotal(req.body || {});
+    return res.json({ status: 'ok', result });
+  } catch (err) {
+    return next(err);
+  }
 };
 
 /**
@@ -182,14 +190,18 @@ export const triggerRegression = async (req: Request, res: Response) => {
  * Checks secret presence by key name only; never logs or returns raw values.
  * POST /api/lab/scenarios/14-secret-crash
  */
-export const triggerSecretCrash = async (_req: Request, _res: Response) => {
+export const triggerSecretCrash = async (
+  _req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
   const hasStripeKey = Boolean(process.env.STRIPE_SECRET_KEY);
   const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
   const err = new Error(
     `PaymentGatewayConfigError: missing or invalid checkout signing webhook secret (STRIPE_SECRET_KEY present=${hasStripeKey}, DATABASE_URL present=${hasDatabaseUrl})`
   );
   err.name = 'PaymentGatewayConfigError';
-  throw err;
+  return next(err);
 };
 
 router.get('/lab/status', getLabStatus);

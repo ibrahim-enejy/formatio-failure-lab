@@ -1,7 +1,7 @@
 # Scenario 08: Bad release, healthcheck gate and 1-click Git rollback
 
 > **Track:** IDP (Deploy, roll back, persist and automate)  
-> **Formations docs:** [Deployments and restarts](https://formatio.cloud/docs/applications/deployments) · [Builds and images](https://formatio.cloud/docs/applications/builds)  
+> **Formatio docs:** [Deployments and restarts](https://formatio.cloud/docs/applications/deployments) · [Builds and images](https://formatio.cloud/docs/applications/builds)  
 > **Difficulty:** Beginner
 
 ---

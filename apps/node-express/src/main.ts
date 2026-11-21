@@ -60,7 +60,11 @@ app.use(
       // @ts-ignore
       res.status(err.errorCode).json(err.message);
     } else if (err) {
-      res.status(500).json(err.message);
+      res.status(500).json({
+        status: 'error',
+        error: err.name || 'Error',
+        message: err.message,
+      });
     }
   },
 );

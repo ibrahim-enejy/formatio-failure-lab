@@ -1,14 +1,17 @@
---- /dev/null
-+++ b/apps/nextjs-15/src/instrumentation.ts
-@@ -0,0 +1 @@
-+export { register, onRequestError } from '@formatio/otel-next'
---- a/apps/nextjs-15/next.config.ts
-+++ b/apps/nextjs-15/next.config.ts
-@@ -0,0 +1,7 @@
-+import type { NextConfig } from 'next'
-+
-+const nextConfig: NextConfig = {
-+  serverExternalPackages: ['@formatio/otel-node'],
-+}
-+
-+export default nextConfig
+--- a/apps/nextjs-15/src/app/api/lab/scenarios/11-otel-sdk-error/route.ts
++++ b/apps/nextjs-15/src/app/api/lab/scenarios/11-otel-sdk-error/route.ts
+@@ -16,7 +16,12 @@
+     })
+   }
+ 
+-  throw new Error(
+-    'Formatio Failure Lab: Next.js 15 Route Handler exception via @formatio/otel-next (pass ?healthy=1 for clean trace)',
++  return NextResponse.json(
++    {
++      status: 'handled',
++      scenario: '11-otel-paths-and-alerts',
++      message: 'Returned structured error payload without uncaught throw.',
++    },
++    { status: 500 },
+   )
+ }

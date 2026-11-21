@@ -43,6 +43,7 @@ Every runtime exception or `5xx` error group immediately evaluates organization 
 
 ---
 
-## 4. Reference hook pattern
+## 4. Hook configuration and reference patch
 
-Review [`solution.patch`](./solution.patch) to see the exact `src/instrumentation.ts` and `next.config.ts` configuration used to capture Next.js 15 Server Component and Route Handler errors.
+- Instrumentation hook is already wired in [`src/instrumentation.ts`](../../apps/nextjs-15/src/instrumentation.ts) (`export { register, onRequestError } from '@formatio/otel-next'`) and [`next.config.ts`](../../apps/nextjs-15/next.config.ts).
+- Review [`solution.patch`](./solution.patch) to see a handled `500` JSON fix for the demo Route Handler [`route.ts`](../../apps/nextjs-15/src/app/api/lab/scenarios/11-otel-sdk-error/route.ts) (`git apply --check scenarios/11-otel-paths-and-alerts/solution.patch`).

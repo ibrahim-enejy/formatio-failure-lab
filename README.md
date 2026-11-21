@@ -39,7 +39,7 @@ flowchart LR
 
 ## 4-track scenario catalog
 
-Every scenario lives under [`scenarios/`](./scenarios) with an executable `trigger.sh` script, reproduction steps, and a reference `solution.patch` or config.
+Every scenario lives under [`scenarios/`](./scenarios) with an executable `trigger.sh` script, reproduction steps, and a `git apply`-verified `solution.patch`, workflow YAML, or verification checklist.
 
 ### Track 1 — IDP (deploy, roll back, persist and automate)
 

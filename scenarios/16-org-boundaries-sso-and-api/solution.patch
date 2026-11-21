@@ -1,3 +1,0 @@
-# Reference governance verification notes for Scenario 16 (no app code patch required)
-# See https://formatio.cloud/docs/platform/api and https://formatio.cloud/docs/workspace/access
-# for SSO (OIDC/SAML), organization/project member boundaries, and Idempotency-Key behavior.

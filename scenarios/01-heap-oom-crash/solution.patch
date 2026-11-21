@@ -1,7 +1,11 @@
---- a/src/app/routes/article/article.controller.ts
-+++ b/src/app/routes/article/article.controller.ts
-@@ -245,11 +245,13 @@ export default router;
- // FIX: Stream processing with bounded memory allocation
+--- a/apps/node-express/src/app/routes/article/article.controller.ts
++++ b/apps/node-express/src/app/routes/article/article.controller.ts
+@@ -242,17 +242,18 @@
+ 
+ export default router;
+ 
+-// SABOTAGE 1: Unbounded Heap Allocation (OOM Kill)
++// FIX: Bound memory allocation per request instead of growing an unbounded array
  export const triggerOOM = async (req: any, res: any) => {
 -  console.log("[Sabotage] Starting massive heap allocation...");
 -  const leakArray: string[] = [];
@@ -11,16 +15,16 @@
 -    }
 -  } catch (err: any) {
 -    return res.status(500).json({ error: err.message });
--  }
-+  // Enforce memory boundary and chunk limit
 +  const MAX_ALLOWED_CHUNKS = 5;
 +  const chunks: Buffer[] = [];
 +  for (let i = 0; i < MAX_ALLOWED_CHUNKS; i++) {
 +    chunks.push(Buffer.alloc(1024 * 1024, 'X'));
-+  }
+   }
 +  return res.json({
-+    status: "ok",
++    status: 'ok',
 +    allocated_mb: MAX_ALLOWED_CHUNKS,
-+    message: "Memory bounded safely to prevent container OOM killer."
++    message: 'Memory bounded cleanly to avoid container OOM kill.',
 +  });
  };
+ 
+ // SABOTAGE 2: The Hanging Webhook (Connection Starvation)

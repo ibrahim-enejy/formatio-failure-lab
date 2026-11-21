@@ -98,10 +98,10 @@ run_golden_loop() {
   "${SCENARIOS_DIR}/09-persistent-volume-and-terminal/trigger.sh" "${base}" || true
   echo ""
 
-  echo "[Step 2/4 — Observability] Firing traced latency & exception telemetry..."
+  echo "[Step 2/4 — Observability] Firing traced latency spike & CPU stall telemetry (Scenario 04)..."
   curl -sS -m 5 "${base}/api/lab/status" || echo "(Status probe timed out or unavailable)"
   echo ""
-  "${SCENARIOS_DIR}/03-unhandled-promise-rejection/trigger.sh" "${base}" || true
+  "${SCENARIOS_DIR}/04-event-loop-block/trigger.sh" "${base}" 1500 || true
   echo ""
 
   echo "[Step 3/4 — AI SRE] Triggering deterministic 1-line checkout regression (Scenario 12)..."
@@ -113,7 +113,10 @@ run_golden_loop() {
   echo ""
 
   echo "=================================================================="
-  echo "Golden Loop trigger sequence complete."
+  echo "Golden Loop trigger sequence complete (service remains healthy)."
+  echo "Want to test destructive process crashes too? Run standalone:"
+  echo "  ./scripts/simulate.sh -s 01 --target ${base}   # Heap OOM (SIGKILL 137)"
+  echo "  ./scripts/simulate.sh -s 03 --target ${base}   # Detached Promise Rejection"
   echo "Inspect inside https://formatio.cloud/dashboard (or https://playground.formatio.cloud):"
   echo "  1. Deployments + Volumes + Terminal -> healthcheck gate & persistent /data"
   echo "  2. Tools > Traces & Tools > Errors  -> OpenTelemetry waterfall & suspect commit"

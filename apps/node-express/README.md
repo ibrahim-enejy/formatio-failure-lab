@@ -1,74 +1,42 @@
-# ![Node/Express/Prisma Example App](project-logo.png)
+# Formatio Failure Lab: Node.js and Express service
 
-[![Build Status](https://travis-ci.org/anishkny/node-express-realworld-example-app.svg?branch=master)](https://travis-ci.org/anishkny/node-express-realworld-example-app)
+Runnable Node.js 20+ Express service used as the primary target for Formatio's **5-minute Golden Loop** alongside Python/FastAPI, Go/Gin, and Next.js 15.
 
-> ### Example Node (Express + Prisma) codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) API spec.
+---
 
-<a href="https://thinkster.io/tutorials/node-json-api" target="_blank"><img width="454" src="https://raw.githubusercontent.com/gothinkster/realworld/master/media/learn-btn-hr.png" /></a>
+## Quickstart
 
-## Getting Started
+### Deploy to Formatio (Railpack or Dockerfile)
+1. Fork or push this repository to GitHub.
+2. Open [Formatio Dashboard](https://formatio.cloud/dashboard) and click **New application**.
+3. Select your forked repository and set **Directory** to `apps/node-express`.
+4. Set Networking port to `3000` and click **Deploy**.
+   - **Railpack:** Builds `npx prisma generate && npx nx build api --configuration=production`, starts `node dist/api/main.js`, and automatically injects `@formatio/otel-node`.
+   - **No Postgres required for `/api/lab/*`:** All healthcheck, storage, observability, regression, and `/mcp` scenarios work out of the box without attaching PostgreSQL (`DATABASE_URL` is used only for full RealWorld article routes).
 
-### Prerequisites
-
-Run the following command to install dependencies:
-
-```shell
+### Local execution
+```bash
 npm install
+npm run build
+npm start
 ```
 
-### Environment variables
-
-This project depends on some environment variables.
-If you are running this project locally, create a `.env` file at the root for these variables.
-Your host provider should included a feature to set them there directly to avoid exposing them.
-
-Here are the required ones:
-
-```
-DATABASE_URL=
-JWT_SECRET=
-NODE_ENV=production
+### Docker Compose
+```bash
+# From repository root:
+docker compose up -d
 ```
 
-### Generate your Prisma client
+---
 
-Run the following command to generate the Prisma Client which will include types based on your database schema:
+## Live endpoints
 
-```shell
-npx prisma generate
-```
-
-### Apply any SQL migration script
-
-Run the following command to create/update your database based on existing sql migration scripts:
-
-```shell
-npx prisma migrate deploy
-```
-
-### Run the project
-
-Run the following command to run the project:
-
-```shell
-npx nx serve api
-```
-
-### Seed the database
-
-The project includes a seed script to populate the database:
-
-```shell
-npx prisma db seed
-```
-
-## Deploy on a remote server
-
-Run the following command to:
-- install dependencies
-- apply any new migration sql scripts
-- run the server
-
-```shell
-npm ci && npx prisma migrate deploy && node dist/api/main.js
-```
+- `GET /healthz`: Readiness check (returns HTTP `503` when `SIMULATE_BAD_HEALTHCHECK=true`).
+- `GET /api/lab/status`: Live Node.js version, PID, uptime, V8 heap/RSS telemetry, and endpoint index.
+- `POST /api/lab/storage` & `GET /api/lab/storage`: Writes and verifies ephemeral (`/tmp`) vs. persistent (`DATA_DIR` / `/data`) markers.
+- `POST /api/lab/scenarios/01-oom`: Unbounded heap allocation triggering kernel OOM (`SIGKILL 137`).
+- `POST /api/lab/scenarios/02-hang`: 15-second upstream hang demonstrating reverse-proxy connection saturation.
+- `POST /api/lab/scenarios/03-unhandled-rejection`: Detached async promise rejection exiting the process cleanly with a 2s OTLP flush.
+- `POST /api/lab/scenarios/04-event-loop-block?ms=5000`: Synchronous CPU loop blocking the event loop and `/healthz`.
+- `POST /api/lab/scenarios/12-regression`: Deterministic 1-line regression in `discount.service.ts` for AI error advisor and autonomous fix PR testing.
+- `POST /api/lab/scenarios/14-secret-crash`: Checks secret presence by name only (never logging raw values) for `/mcp` redaction verification.

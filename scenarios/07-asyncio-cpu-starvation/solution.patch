@@ -1,13 +1,18 @@
---- a/app/routers/lab.py
-+++ b/app/routers/lab.py
-@@ -48,7 +48,8 @@ async def trigger_asyncio_cpu_starvation(duration_ms: int = Query(5000, alias="m
+--- a/apps/python-fastapi/app/routers/lab.py
++++ b/apps/python-fastapi/app/routers/lab.py
+@@ -56,9 +56,12 @@
+     """
      start = time.time()
      duration_sec = duration_ms / 1000.0
 -    while (time.time() - start) < duration_sec:
+-        # Busy loop starving asyncio event loop
 -        _ = [x**2 for x in range(1000)]
-+    # FIX: Offload CPU-bound synchronous block to a worker thread pool
++
 +    def _cpu_worker():
 +        while (time.time() - start) < duration_sec:
 +            _ = [x**2 for x in range(1000)]
++
 +    await asyncio.to_thread(_cpu_worker)
      return {
+         "status": "resolved",
+         "scenario": "07-asyncio-cpu-starvation",

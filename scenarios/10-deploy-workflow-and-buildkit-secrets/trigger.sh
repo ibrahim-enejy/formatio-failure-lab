@@ -8,15 +8,10 @@ echo "Scenario 10: Deploy workflows & BuildKit secret verification"
 echo "=========================================================="
 
 echo "1. Checking workflow.yaml DAG structure..."
-for required in "type: git-event" "type: condition" "type: deploy" "!\*\\*/\*.md" "{{ trigger.branch }}"; do
-  if ! grep -q "${required//\\}" "${SCENARIO_DIR}/workflow.yaml" 2>/dev/null; then
-    true
-  fi
-done
-
 grep -q "type: git-event" "${SCENARIO_DIR}/workflow.yaml"
 grep -q "type: condition" "${SCENARIO_DIR}/workflow.yaml"
 grep -q "type: deploy" "${SCENARIO_DIR}/workflow.yaml"
+grep -Fq '!**/*.md' "${SCENARIO_DIR}/workflow.yaml"
 grep -q "{{ trigger.branch }}" "${SCENARIO_DIR}/workflow.yaml"
 echo "   OK: workflow.yaml uses valid git-event -> condition -> deploy DAG syntax."
 
