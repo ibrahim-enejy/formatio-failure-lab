@@ -1,0 +1,30 @@
+# Replace placeholder UUIDs using Formatio's visual workflow pickers.
+steps:
+  - name: Git push
+    type: git-event
+    params:
+      type: push
+      connection_id: REPLACE_CONNECTION_UUID
+      repository_id: 'REPLACE_REPOSITORY_ID'
+      repository_path: your-org/formatio-failure-lab
+      branches:
+        - main
+      paths:
+        - 'apps/node-express/**'
+        - '!**/*.md'
+    next:
+      - Check main branch
+  - name: Check main branch
+    type: condition
+    params:
+      left: '{{ trigger.branch }}'
+      operator: eq
+      right: main
+    next:
+      - to: Deploy Failure Lab API
+        when: 'true'
+  - name: Deploy Failure Lab API
+    type: deploy
+    params:
+      application: REPLACE_APPLICATION_UUID
+      strategy: ''

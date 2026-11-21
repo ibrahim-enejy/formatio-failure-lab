@@ -1,141 +1,147 @@
-# Formatio Open-Source Failure Lab 🧪💥
+# Formatio Open-Source Failure Lab
 
-[![Formatio Autonomous SRE](https://img.shields.io/badge/Formatio-Autonomous%20SRE%20Ready-blue.svg)](https://formatio.cloud)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Multi-Framework](https://img.shields.io/badge/Frameworks-Node%20%7C%20Python%20%7C%20Go%20%7C%20Java%20%7C%20Rust-purple.svg)](#supported-frameworks--languages)
+[![Formatio Playground](https://img.shields.io/badge/Playground-No%20Sign--In-0f766e.svg)](https://playground.formatio.cloud)
+[![Formatio 14-Day Trial](https://img.shields.io/badge/Formatio-14--Day%20Free%20Trial-111827.svg)](https://formatio.cloud/dashboard)
 
-> **The Living Benchmark of Real-World Microservice Failures.**  
-> Built to stress-test cloud infrastructure, observability pipelines, and autonomous remediation engines.
+Reproducible production chaos and quickfire evaluation harness across all four Formatio products: **IDP**, **Observability**, **AI SRE**, and **Govern**.
 
----
-
-## ⚡ What is the Failure Lab?
-
-Modern cloud production outages rarely resemble textbook bugs. They are emergent distributed failures: unhandled async rejections silently killing worker processes, slow upstream webhooks exhausting connection pools, event loops starved by CPU-heavy regexes, or unbounded goroutine leaks slowly pushing containers into cgroup OOM crashes.
-
-The **Formatio Failure Lab** is an open-source, multi-framework benchmark repository where every failure is:
-1. **100% Real-World Reproducible:** Injectable via a single cURL command or CLI script.
-2. **Observable via OpenTelemetry:** Ready out of the box with runtime telemetry endpoints (`/api/lab/status`).
-3. **Paired with Autonomous Remediation Blueprints:** Every scenario includes a root cause dossier and a verified `solution.patch` showing how an Autonomous SRE diagnoses and fixes the bug.
-
-This repository serves as the **Shared Core Artifact** behind Formatio's weekly technical deep dives, architectural teardowns, and engineering benchmarks.
+- **Try without signing in:** Explore a pre-loaded deploy, trace waterfall, AI SRE pull request, and Govern workspace in the [interactive playground](https://playground.formatio.cloud).
+- **Run on your own servers or clusters:** Start a **14-day free trial** (`$200/month flat` per organization afterwards, zero per-seat fees) at [Formatio Dashboard](https://formatio.cloud/dashboard).
+- **Read full product guides:** [Formatio documentation](https://formatio.cloud/docs).
 
 ---
 
-## 🏗️ Architecture & Framework Support
+## Start here: the 5-minute Golden Loop
 
-The repository is modularly sectioned by runtime and framework under [`apps/`](./apps):
-
-| Framework / Language | Path | Key Outage Patterns Tested | Formatio Telemetry |
-| :--- | :--- | :--- | :--- |
-| **Node.js / Express** | [`apps/node-express`](./apps/node-express) | Heap OOM, Event loop freeze, Unhandled promise rejection, Prisma pool starvation | V8 Heap, Event loop lag, HTTP spans |
-| **Python / FastAPI** | [`apps/python-fastapi`](./apps/python-fastapi) | Asyncio event-loop block, GIL contention, DB connection starvation | Python RSS/VMS, ASGI latency |
-| **Go / Gin** | [`apps/go-gin`](./apps/go-gin) | Leaked goroutines, Unbuffered channel deadlocks, Heap allocation spikes | `runtime.NumGoroutine`, GC pause times |
-| **Java / Spring Boot** | [`apps/java-spring`](./apps/java-spring) | JVM Metaspace leaks, Stop-The-World GC stalls, HikariCP exhaustion | JVM Heap/Metaspace, Thread pool |
-| **Rust / Actix-Web** | [`apps/rust-actix`](./apps/rust-actix) | Tokio worker starvation, Async mutex deadlocks | Memory usage, Queue latency |
-
----
-
-## 📂 Scenario Catalog
-
-Granular reproduction dossiers, trigger scripts, and solution patches live under [`scenarios/`](./scenarios):
-
-| ID | Scenario | Runtime | Failure Type | Reproduction Dossier |
-| :--- | :--- | :--- | :--- | :--- |
-| **01** | **Unbounded Heap Allocation (OOM)** | Node / Python / Go | Memory Exhaustion | [Dossier](./scenarios/01-heap-oom-crash) |
-| **02** | **Upstream Connection Starvation (Hanging Webhook)** | All | Latency Cascade & Socket Exhaustion | [Dossier](./scenarios/02-connection-starvation-hang) |
-| **03** | **Detached Async Unhandled Rejection** | Node.js | Uncaught Exception / V8 Exit Code 1 | [Dossier](./scenarios/03-unhandled-promise-rejection) |
-| **04** | **CPU Starvation & Event Loop Blocking** | Node.js | Single-Thread Execution Starvation | [Dossier](./scenarios/04-event-loop-block) |
-| **05** | **Database Connection Pool Lockup (N+1)** | Node / Python | Connection Pool Saturation | [Dossier](./scenarios/05-postgres-pool-lockup) |
-| **06** | **Unbounded Goroutine Starvation** | Go | Concurrency / Goroutine Leak | [Dossier](./scenarios/06-unbounded-goroutine-leak) |
-| **07** | **Asyncio CPU Starvation (Sync in ASGI)** | Python | Event Loop Freeze & Heartbeat Timeout | [Dossier](./scenarios/07-asyncio-cpu-starvation) |
-
----
-
-## 🚀 How to Deploy & Test on Formatio
-
-You can deploy any application from this lab directly to [Formatio](https://formatio.cloud) in less than 60 seconds:
+See all four Formatio pillars working together in a single guided run:
 
 ```mermaid
-graph LR
-    Fork["1. Fork Repo"] --> Deploy["2. Deploy to Formatio"]
-    Deploy --> Trigger["3. Trigger Failure"]
-    Trigger --> Fix["4. Watch AI SRE Open PR"]
+flowchart LR
+    Deploy["1. IDP: Deploy + healthcheck gate + rollback"] --> Observe["2. Observe: OTel spans + suspect commit"]
+    Observe --> SRE["3. AI SRE: Built-in advisor + fix PR"]
+    SRE --> Govern["4. Govern: /mcp redaction + kill switch"]
 ```
 
-1. **Fork this repository** to your personal GitHub account.
-2. Log in to the [Formatio Cloud Dashboard](https://formatio.cloud/dashboard).
-3. Click **New Service** → select your forked repository.
-4. Set the **Root Directory** to your chosen app:
-   - For Node.js: `apps/node-express`
-   - For Python: `apps/python-fastapi`
-   - For Go: `apps/go-gin`
-5. Click **Deploy**. Formatio Railpack automatically builds and instruments the service.
-6. Once deployed, run any scenario against your live production URL:
+1. Fork this repository and deploy `apps/node-express` in [Formatio Dashboard](https://formatio.cloud/dashboard) (**New application** → set **Directory** to `apps/node-express` → **Deploy**).
+2. Enable AI triage on **Organization › AI** (keep **Provider** on **Automatic** — Formatio's built-in AI error advisor works out of the box with zero API keys required).
+3. Run the Golden Loop against your live service URL (or locally on `http://localhost:3000`):
    ```bash
-   ./scripts/simulate.sh --scenario 01-heap-oom-crash --target https://your-service.formatio.cloud
+   ./scripts/simulate.sh --golden-loop --target https://your-app.formatio.cloud
    ```
-7. Watch the Formatio Autonomous SRE dashboard detect the anomaly, correlate the telemetry, and open an automated fix Pull Request on your repository.
+4. Inspect each product tab in Formatio:
+   - **IDP:** Verify `/healthz` readiness gating, `/data` volume persistence, and 1-click **Rollback** on **Deployments**.
+   - **Observability:** Open **Tools › Traces** and **Tools › Errors** to see the correlated OTLP waterfall and suspect commit ranking.
+   - **AI SRE:** View the built-in **AI error advisor** diagnosis and the human-reviewed fix pull request opened on your Git repo (never pushing directly to `main`).
+   - **Govern:** Query your errors over `POST /mcp` (`FORMATIO_MCP_TOKEN`) to confirm secret values stay redacted to names only, then test the instant `agent_access` kill switch.
 
 ---
 
-## 💻 Local Quickstart
+## 4-track scenario catalog
 
-Want to experiment locally with Docker Compose?
+Every scenario lives under [`scenarios/`](./scenarios) with an executable `trigger.sh` script, reproduction steps, and a reference `solution.patch` or config.
+
+### Track 1 — IDP (deploy, roll back, persist and automate)
+
+| ID | Scenario | Value proven | Dossier |
+| :--- | :--- | :--- | :--- |
+| **08** | **Bad release, healthcheck gate and rollback** | Blocks unhealthy `/healthz` or `127.0.0.1` releases before traffic cutover; 1-click **Rollback** to prior commit SHA | [Scenario 08](./scenarios/08-bad-release-healthcheck-rollback) |
+| **09** | **Persistent volume survival and web terminal** | Compares ephemeral `/tmp` reset vs. durable `/data` volume across redeploys, verified in browser **Terminal** | [Scenario 09](./scenarios/09-persistent-volume-and-terminal) |
+| **10** | **Zero-CI deploy workflow and BuildKit secrets** | Replaces bespoke CI YAML with a branch/path DAG (`workflow.yaml`) and ephemeral `/run/secrets/<KEY>` builds | [Scenario 10](./scenarios/10-deploy-workflow-and-buildkit-secrets) |
+
+### Track 2 — Observability (lightweight OpenTelemetry, traces and alerts)
+
+| ID | Scenario | Runtime | Value proven | Dossier |
+| :--- | :--- | :--- | :--- | :--- |
+| **01** | **Unbounded heap allocation (OOM kill)** | Node / Python / Go | Captures trace and memory context before kernel `SIGKILL (137)` | [Scenario 01](./scenarios/01-heap-oom-crash) |
+| **02** | **Upstream connection starvation (15s hang)** | Node / Go | Exposes latency outliers and reverse-proxy saturation cleanly | [Scenario 02](./scenarios/02-connection-starvation-hang) |
+| **03** | **Detached async unhandled rejection** | Node.js | 2-second OTLP crash flush records exit exceptions silently dropped after `202` | [Scenario 03](./scenarios/03-unhandled-promise-rejection) |
+| **04** | **CPU starvation and event loop block** | Node.js | Pinpoints synchronous CPU loops freezing `/healthz` and concurrent I/O | [Scenario 04](./scenarios/04-event-loop-block) |
+| **05** | **Database connection pool lockup** | Node / Python | Surfaces pool queue timeouts and N+1 contention inside span waterfalls | [Scenario 05](./scenarios/05-postgres-pool-lockup) |
+| **06** | **Unbounded goroutine channel leak** | Go | Tracks leaked channel goroutines before GC stalls and OOM crashes | [Scenario 06](./scenarios/06-unbounded-goroutine-leak) |
+| **07** | **Asyncio CPU starvation in ASGI** | Python | Flags blocking CPU loops inside `async def` FastAPI routes | [Scenario 07](./scenarios/07-asyncio-cpu-starvation) |
+| **11** | **Railpack auto-OTel vs. Next.js 15 SDK and alerts** | Node / Next.js 15 | Compares automatic Railpack OTel vs. 1-line `@formatio/otel-next` + 6 alert integrations | [Scenario 11](./scenarios/11-otel-paths-and-alerts) |
+
+### Track 3 — AI SRE (built-in error advisor, fix PRs and runtime CVEs)
+
+| ID | Scenario | Value proven | Dossier |
+| :--- | :--- | :--- | :--- |
+| **12** | **1-line regression, built-in advisor and fix PR** | Suspect-commit ranking → built-in **AI error advisor** (works natively out of the box; optional BYO across 7 providers) → human-reviewed fix PR | [Scenario 12](./scenarios/12-regression-suspect-commit-pr) |
+| **13** | **Live runtime CVE vs. Dependabot noise** | Focuses remediation on actively running dependencies rather than flooding PR queues with unused `devDependencies` | [Scenario 13](./scenarios/13-runtime-cve-vs-noise) |
+
+### Track 4 — Govern (safe coding agents, secrets and team access)
+
+| ID | Scenario | Value proven | Dossier |
+| :--- | :--- | :--- | :--- |
+| **14** | **`/mcp` debugging with secret redaction** | Cursor / Claude Code calls `POST /mcp` (`get_occurrence`, `get_application`) and receives env **names only, zero values** | [Scenario 14](./scenarios/14-mcp-secret-redaction) |
+| **15** | **Scoped `/mcp` permissions and kill switch** | Verifies read-only vs. deploy scopes and instant organization `agent_access` revocation | [Scenario 15](./scenarios/15-mcp-scopes-and-kill-switch) |
+| **16** | **Project boundaries, SSO and REST API idempotency** | Proves org vs. project isolation, included OIDC/SAML SSO, and `Idempotency-Key` protection across `/api/.../` | [Scenario 16](./scenarios/16-org-boundaries-sso-and-api) |
+
+---
+
+## Applications and framework matrix
+
+| Service | Directory | Status | OpenTelemetry instrumentation path |
+| :--- | :--- | :--- | :--- |
+| **Node.js / Express** | [`apps/node-express`](./apps/node-express) | **Runnable** | Automatic `@formatio/otel-node` preload on Railpack builds |
+| **Next.js 15 (App Router)** | [`apps/nextjs-15`](./apps/nextjs-15) | **Runnable** | 1-line `src/instrumentation.ts` (`@formatio/otel-next`) |
+| **Python / FastAPI** | [`apps/python-fastapi`](./apps/python-fastapi) | **Runnable** | Automatic `formatio-otel` startup preload on Railpack builds |
+| **Go / Gin** | [`apps/go-gin`](./apps/go-gin) | **Runnable** | Automatic Go compile-time OTel on Railpack builds |
+| **Java / Spring Boot** | [`apps/java-spring`](./apps/java-spring) | Template stub | Java agent roadmap documented in folder README |
+| **Rust / Actix-Web** | [`apps/rust-actix`](./apps/rust-actix) | Template stub | Custom OTLP export notes documented in folder README |
+
+---
+
+## Deploy to Formatio in 60 seconds
+
+1. Fork this repository to your GitHub, GitLab, Bitbucket, or Azure DevOps account.
+2. Open [Formatio Dashboard](https://formatio.cloud/dashboard) (`14-day free trial` across all four products on your own servers, Docker Swarm, Kubernetes, AWS ECS, or Google Cloud Run).
+3. Click **New application** and select your forked `formatio-failure-lab` repository.
+4. Set **Directory** to the service you want to test:
+   - `apps/node-express` (port `3000`)
+   - `apps/nextjs-15` (port `3000`)
+   - `apps/python-fastapi` (port `8000`)
+   - `apps/go-gin` (port `8080`)
+5. Click **Deploy**, turn on **Organization › AI** (keep **Provider** on **Automatic** for Formatio's built-in AI model, or optionally attach your own across 7 backends), and run `./scripts/simulate.sh`.
+
+---
+
+## Local quickstart
 
 ```bash
-# Clone the repository
 git clone https://github.com/ibrahim-enejy/formatio-failure-lab.git
 cd formatio-failure-lab
 
-# Start all microservices and Postgres
+# Start Postgres, node-express (:3000), nextjs-15 (:3001), python-fastapi (:8000), go-gin (:8080)
 docker compose up -d
 
-# Verify live telemetry
-curl -s http://localhost:3000/api/lab/status | jq .
-curl -s http://localhost:8000/api/lab/status | jq .
-curl -s http://localhost:8080/api/lab/status | jq .
-```
-
-### Running Scenarios with the Universal Simulator
-
-```bash
-# List all available scenarios
+# List scenarios by track
 ./scripts/simulate.sh --list
+./scripts/simulate.sh --track idp
+./scripts/simulate.sh --track govern
 
-# Trigger Heap OOM on Node.js
-./scripts/simulate.sh --scenario 01 --target http://localhost:3000
-
-# Trigger Goroutine Leak on Go
-./scripts/simulate.sh --scenario 06 --target http://localhost:8080
-
-# Trigger Asyncio Event Loop Freeze on Python
-./scripts/simulate.sh --scenario 07 --target http://localhost:8000
+# Run the 5-minute Golden Loop against local Node/Express
+./scripts/simulate.sh --golden-loop --target http://localhost:3000
 ```
 
 ---
 
-## 🛡️ Traditional APM vs. Formatio Autonomous SRE
+## Stitched tooling vs. Formatio
 
-| Metric / Action | Traditional APM (Datadog + PagerDuty) | Formatio Autonomous SRE |
+| Workflow step | Separate CI + PaaS + APM + chat bots | Formatio |
 | :--- | :--- | :--- |
-| **Alert Delay** | 5 – 15 minutes (threshold aggregations) | Instantaneous OpenTelemetry span anomaly correlation |
-| **Root Cause Isolation** | Manual log parsing & distributed trace diving | Code-level stack frame & commit correlation |
-| **Remediation Time** | Hours to days of developer fire-fighting | Autonomous Pull Request opened in minutes with regression test |
-| **Human Burden** | SRE woke up at 3:00 AM | Verified patch waiting in GitHub PR queue |
+| **Deploy & roll back** | Hand-rolled CI scripts and manual cluster rollbacks | Git deploy onto your own infra, `/healthz` gating, and 1-click commit rollback |
+| **Instrumentation** | Collector sidecars or multi-week manual wiring | Automatic Railpack OTel (`Go`, `Node.js`, `Python`, `Java`, `.NET`) or 1–3 line SDK hook |
+| **Diagnosis & fix PRs** | Copy stack traces into chat or buy separate AI add-ons | Built-in AI error advisor out of the box (optional 7-provider BYO) + sandboxed reviewed fix PRs |
+| **Coding-agent security** | Pasting `.env` files or sharing broad PATs | Expiring scoped `/mcp` tokens showing secret **names only** + `agent_access` kill switch |
+| **Pricing & SSO** | Per-seat, per-GB ingest, and Enterprise SSO upsells | **$200/month flat** per organization including OIDC/SAML SSO (14-day free trial) |
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We welcome community-contributed failure scenarios! If you have encountered an elusive production bug in your stack, please open a PR:
+Pull requests adding realistic failure scenarios under `scenarios/XX-scenario-name/` (`README.md`, executable `trigger.sh`, and `solution.patch`) are welcome. Keep scenario headings in strict sentence case without emojis or fabricated benchmark numbers.
 
-1. Place your scenario under `scenarios/XX-scenario-name/`.
-2. Provide a `README.md` with Failure Anatomy, Reproduction, and Comparison table.
-3. Provide a `trigger.sh` script and a `solution.patch`.
+## License
 
----
-
-## 📄 License
-
-Distributed under the MIT License. See [LICENSE](./LICENSE) for details.
+Distributed under the MIT License. See [`LICENSE`](./LICENSE) for details.

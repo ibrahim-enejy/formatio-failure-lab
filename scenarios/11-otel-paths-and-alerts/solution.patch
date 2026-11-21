@@ -1,0 +1,14 @@
+--- /dev/null
++++ b/apps/nextjs-15/src/instrumentation.ts
+@@ -0,0 +1 @@
++export { register, onRequestError } from '@formatio/otel-next'
+--- a/apps/nextjs-15/next.config.ts
++++ b/apps/nextjs-15/next.config.ts
+@@ -0,0 +1,7 @@
++import type { NextConfig } from 'next'
++
++const nextConfig: NextConfig = {
++  serverExternalPackages: ['@formatio/otel-node'],
++}
++
++export default nextConfig

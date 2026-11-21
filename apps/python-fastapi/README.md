@@ -20,14 +20,15 @@ docker run -p 8000:8000 formatio-failure-lab-python
 
 ### Deploy to Formatio
 1. Fork or push this repository to GitHub.
-2. In the Formatio dashboard, select **New Service** → choose this repo.
-3. Set **Root Directory** to `apps/python-fastapi`.
-4. Deploy! Formatio detects Python, provisions the container, and mounts OpenTelemetry instrumentation automatically.
+2. In the [Formatio Dashboard](https://formatio.cloud/dashboard), select **New application** → choose this repo.
+3. Set **Directory** to `apps/python-fastapi`.
+4. Click **Deploy**. Formatio detects Python, provisions the container, and attaches OpenTelemetry instrumentation automatically.
 
 ---
 
-## Live Endpoints
+## Live endpoints
 
+- `GET /healthz`: Readiness check (returns HTTP `503` when `SIMULATE_BAD_HEALTHCHECK=true`).
 - `GET /api/lab/status`: Real-time RSS, VMS memory, runtime PID, and uptime telemetry.
 - `POST /api/lab/scenarios/01-oom`: Unbounded memory allocation causing process SIGKILL.
 - `POST /api/lab/scenarios/05-pool-lockup`: Upstream socket starvation holding worker resources.

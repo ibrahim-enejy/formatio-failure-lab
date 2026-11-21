@@ -1,0 +1,15 @@
+--- a/apps/node-express/src/app/routes/lab/lab.controller.ts
++++ b/apps/node-express/src/app/routes/lab/lab.controller.ts
+@@ -5,10 +5,10 @@ import { triggerOOM, triggerHang } from '../article/article.controller';
+ import { calculateCheckoutTotal } from './discount.service';
+ 
+ const router = Router();
+-const EPHEMERAL_MARKER = '/tmp/formatio-ephemeral.json';
++const STATE_FILE = 'formatio-persistent.json';
+ 
+ function persistentMarkerPath(): string {
+-  const dir = process.env.DATA_DIR || '/data';
+-  return path.join(dir, 'formatio-persistent.json');
++  const dir = process.env.DATA_DIR || '/data';
++  return path.join(dir, STATE_FILE);
+ }

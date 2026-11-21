@@ -1,25 +1,22 @@
-# Scenario 03: Detached Async Unhandled Promise Rejection
+# Scenario 03: Detached async unhandled promise rejection
 
-> **Failure Classification:** Asynchronous Error / Uncaught Exception  
-> **Affected Framework:** Node.js (V8 Event Loop Crash)  
-> **Difficulty:** Intermediate  
+> **Track:** Observability (Lightweight OpenTelemetry, traces and alerts)  
+> **Failure classification:** Asynchronous error / uncaught exception  
+> **Affected framework:** Node.js  
+> **Difficulty:** Intermediate
 
 ---
 
-## 1. Failure Anatomy
+## 1. Failure anatomy
 
-In modern microservices, background async tasks (like fire-and-forget audits, analytics, or webhook dispatchers) are often invoked outside the main Express `try/catch` request lifecycle.
-
-If an error throws inside a detached Promise without a `.catch()` block, Node.js triggers an `unhandledRejection` event. In Node 16+, unhandled rejections terminate the process with exit code 1 (`UnhandledPromiseRejection: This error originated either by throwing inside of an async function without a catch block...`).
+Background async tasks (audit logging, webhook dispatching) often run outside Express request `try/catch` blocks. An unawaited rejection throws an `unhandledRejection` after `202 Accepted` already returned, exiting Node.js with status `1`.
 
 ```text
-[HTTP Request] → POST /api/lab/scenarios/03-unhandled-rejection
+[HTTP request] -> POST /api/lab/scenarios/03-unhandled-rejection
       ↓
 202 Accepted returned to client
-      ↓ (250ms later in detached Promise)
-Database Transaction Timeout throws
-      ↓ (No .catch() handler)
-Process terminates with exit code 1 (Crash Loop)
+      ↓ (250ms later inside detached Promise)
+Database transaction timeout throws -> uncaught exception 2s OTLP flush -> exit code 1
 ```
 
 ---
@@ -27,14 +24,19 @@ Process terminates with exit code 1 (Crash Loop)
 ## 2. Reproduction
 
 ```bash
+./scenarios/03-unhandled-promise-rejection/trigger.sh http://localhost:3000
+```
+
+Direct curl:
+```bash
 curl -i -X POST https://your-app.formatio.cloud/api/lab/scenarios/03-unhandled-rejection
 ```
 
 ---
 
-## 3. What Happens on Traditional Infrastructure vs. Formatio
+## 3. Traditional APM vs. Formatio
 
-| Traditional APM Setup | Formatio Autonomous SRE |
+| Traditional APM setup | Formatio |
 | :--- | :--- |
-| The HTTP request succeeded (202), so the error is **invisible in standard endpoint latency charts**. Sentry logs an unattached error. | **Formatio links the unhandled rejection directly to the execution context**, capturing stack frame, commit ID, and active traces. |
-| Engineer has to search container stderr logs to locate the detached promise. | **Formatio AI SRE opens a PR** attaching explicit `.catch()` error logging or safe task queue boundaries. |
+| Request already returned `202`, hiding failure in latency charts while the process exits before async log shippers flush. | `@formatio/otel-node` emits an `uncaught exception` span with up to a 2-second OTLP flush before exit, tying stack frames to the deployed commit. |
+| Engineer scrapes container stderr logs manually to locate the detached promise. | Built-in AI error advisor explains the detached rejection out of the box and AI SRE opens a human-reviewed fix PR adding explicit `.catch()` error handling (patch in [`solution.patch`](./solution.patch)). |

@@ -1,0 +1,26 @@
+--- a/apps/node-express/src/main.ts
++++ b/apps/node-express/src/main.ts
+@@ -80,7 +80,7 @@ app.use(
+  * Server activation
+  */
+ 
+-const HOST = '127.0.0.1'; // BUG: refuses ingress and readiness probes outside container
++const HOST = process.env.HOST || '0.0.0.0';
+ const PORT = Number(process.env.PORT || 3000);
+ 
+ app.listen(PORT, HOST, () => {
+--- a/apps/node-express/src/app/routes/lab/lab.controller.ts
++++ b/apps/node-express/src/app/routes/lab/lab.controller.ts
+@@ -28,11 +28,6 @@ function readJsonMarker(filePath: string): { exists: boolean; data: unknown } {
+  * GET /healthz
+  */
+ export const getHealthz = async (req: Request, res: Response) => {
+-  if (process.env.SIMULATE_BAD_HEALTHCHECK === 'true') {
+-    return res.status(503).json({
+-      status: 'unhealthy',
+-      reason: 'SIMULATE_BAD_HEALTHCHECK=true',
+-    });
+-  }
+   return res.status(200).json({
+     status: 'ok',
+     service: 'node-express',

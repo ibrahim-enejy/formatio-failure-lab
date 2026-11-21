@@ -1,54 +1,46 @@
-# Scenario 04: CPU Starvation & Event Loop Blocking
+# Scenario 04: CPU starvation and event loop blocking
 
-> **Failure Classification:** CPU Starvation / Single-Thread Bottleneck  
-> **Affected Framework:** Node.js (V8 Event Loop Block) / Single-Thread Runtimes  
-> **Difficulty:** Intermediate  
+> **Track:** Observability (Lightweight OpenTelemetry, traces and alerts)  
+> **Failure classification:** CPU starvation / single-thread bottleneck  
+> **Affected framework:** Node.js  
+> **Difficulty:** Intermediate
 
 ---
 
-## 1. Failure Anatomy
+## 1. Failure anatomy
 
-Node.js runs user JavaScript code on a single thread. When compute-heavy tasks (regular expression Denial of Service, heavy synchronous JSON parsing, cryptographic hashing, or large array transforms) run synchronously on the main thread, the entire event loop freezes.
-
-While the event loop is blocked:
-- No incoming HTTP connections are accepted.
-- Health-check probes (`/healthz` or `/api/lab/status`) fail and trigger Kubernetes / ECS container restarts.
-- Active websocket connections drop.
-- All concurrent users experience infinite loading or timeouts.
+Heavy synchronous tasks (catastrophic regex evaluation, blocking loops, large sync transforms) stall Node.js's single event loop thread so concurrent requests and `/healthz` readiness checks freeze.
 
 ```text
-[Main Thread] ───[Synchronous CPU-intensive loop (5s)]───>
+[Main thread] ---[Synchronous CPU loop (5s)]--->
                         ▲
-                        │ All I/O, timers & incoming HTTP requests blocked
-[Health Check] ──X (Timed out) ──> Orchestrator kills container
+                        │ All I/O, timers, and /healthz probes blocked
 ```
 
 ---
 
-## 2. Reproduction Steps
+## 2. Reproduction steps
 
-### Option A: Using the CLI Trigger Script
+### Option A: Using the CLI trigger script
 ```bash
 ./scenarios/04-event-loop-block/trigger.sh http://localhost:3000
 ```
 
-### Option B: Direct cURL
+### Option B: Direct curl
 ```bash
-# Block event loop for 6000ms (6 seconds)
 curl -i -X POST "https://your-app.formatio.cloud/api/lab/scenarios/04-event-loop-block?ms=6000"
 ```
 
-To see the blast radius, run a health-check in another terminal simultaneously:
+Run a concurrent healthcheck in another terminal to observe the stall:
 ```bash
-curl -i --max-time 2 https://your-app.formatio.cloud/api/lab/status
+curl -i --max-time 2 https://your-app.formatio.cloud/healthz
 ```
-Notice that the health-check will not respond until the 6-second block completes.
 
 ---
 
-## 3. What Happens on Traditional Infrastructure vs. Formatio
+## 3. Traditional APM vs. Formatio
 
-| Traditional APM Setup | Formatio Autonomous SRE |
+| Traditional APM setup | Formatio |
 | :--- | :--- |
-| Container metrics show CPU spike to 100% of single core. Health check fails after 3 retries; container is restarted without identifying the root cause. | **Formatio Event Loop Delay metrics (ELDO)** spike instantly, correlating the hang directly to the route handler. |
-| Engineer assumes memory leak or database deadlock, spending hours profiling the wrong subsystem. | **Formatio AI SRE diagnoses the CPU hotspot** and opens a PR offloading the computation to a worker thread or chunking via `setImmediate`. |
+| Container restarts after failed healthchecks without tracing the blocking handler commit. | Trace waterfalls and latency metrics correlate the freeze straight to `/api/lab/scenarios/04-event-loop-block` and its release commit. |
+| Engineer spends hours guessing between DB locks and memory leaks. | Built-in AI error advisor (works out of the box) and autonomous AI SRE open a fix PR moving heavy compute off the event loop (patch in [`solution.patch`](./solution.patch)). |

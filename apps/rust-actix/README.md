@@ -1,16 +1,15 @@
-# Formatio Failure Lab: Rust / Actix-Web Microservice
+# Formatio Failure Lab: Rust and Actix-Web template
 
-> High-performance compiled async microservice designed for diagnosing Tokio runtime thread pool starvation, async mutex deadlocks, and connection queue overflows.
+> **Status:** Template stub (application source code planned — deploy `apps/node-express`, `apps/nextjs-15`, `apps/python-fastapi`, or `apps/go-gin` for live runnable tests today).
 
----
+Compiled async microservice template planned for diagnosing Tokio runtime thread pool starvation, async mutex deadlocks, and channel queue overflows.
 
-## Target Scenarios for Rust Rotation
+## Planned scenarios for Rust
 
-1. **Async Mutex Contention & Tokio Worker Starvation:** Holding an async mutex across `.await` points under heavy concurrency.
-2. **Channel Buffer Exhaustion:** Unbounded mpsc channel buffering causing out-of-memory under high ingestion pressure.
-3. **Blocking System Calls in Tokio Context:** Calling blocking filesystem or CPU-intensive routines directly inside an async worker rather than `tokio::task::spawn_blocking`.
-
----
+1. **Async mutex contention and Tokio worker starvation:** Holding an async mutex across `.await` points under heavy concurrency.
+2. **Channel buffer exhaustion:** Unbounded mpsc channel buffering causing out-of-memory under heavy ingestion.
+3. **Blocking system calls inside Tokio:** Calling blocking filesystem or CPU routines on an async worker rather than `tokio::task::spawn_blocking`.
 
 ## Deployment to Formatio
-- Formatio Railpack automatically builds Rust services via `cargo build --release`, producing a hyper-lean scratch container.
+
+Formatio builds Rust services from `Cargo.toml` or a multi-stage `Dockerfile` and exports standard OTLP traces to `/otlp/v1/traces`.

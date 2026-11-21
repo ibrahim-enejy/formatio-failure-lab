@@ -19,14 +19,15 @@ docker run -p 8080:8080 formatio-failure-lab-go
 
 ### Deploy to Formatio
 1. Fork or push this repository to GitHub.
-2. In the Formatio dashboard, select **New Service** → choose this repo.
-3. Set **Root Directory** to `apps/go-gin`.
-4. Deploy! Formatio detects Go, compiles the binary, and injects runtime telemetry.
+2. In the [Formatio Dashboard](https://formatio.cloud/dashboard), select **New application** → choose this repo.
+3. Set **Directory** to `apps/go-gin`.
+4. Click **Deploy**. Formatio detects Go, compiles the binary, and injects runtime telemetry.
 
 ---
 
-## Live Endpoints
+## Live endpoints
 
+- `GET /healthz`: Readiness check (returns HTTP `503` when `SIMULATE_BAD_HEALTHCHECK=true`).
 - `GET /api/lab/status`: Live Go runtime telemetry (`Alloc`, `Sys`, `NumGoroutine`, GC statistics).
 - `POST /api/lab/scenarios/01-oom`: Unbounded slice allocations forcing container OOM killer.
 - `POST /api/lab/scenarios/02-hang`: 15-second upstream dependency hang.

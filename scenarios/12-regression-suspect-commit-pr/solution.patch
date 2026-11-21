@@ -1,0 +1,11 @@
+--- a/apps/node-express/src/app/routes/lab/discount.service.ts
++++ b/apps/node-express/src/app/routes/lab/discount.service.ts
+@@ -16,7 +16,7 @@ export interface CheckoutResult {
+  */
+ export function calculateCheckoutTotal(input: CheckoutInput): CheckoutResult {
+   const subtotalCents = Math.max(0, Math.round(input.amountCents ?? 4900));
+-  const discountRate = input.coupon!.percentOff / 100;
++  const discountRate = (input.coupon?.percentOff ?? 0) / 100;
+   const discountCents = Math.round(subtotalCents * discountRate);
+   return {
+     subtotalCents,

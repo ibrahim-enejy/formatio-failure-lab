@@ -1,0 +1,4 @@
+# Reference verification matrix for Scenario 15 (no source code patch required)
+# Scope escalation check:
+#   - Baseline token: list_issues/get_issue/get_trace allowed; deploy_application denied.
+#   - Organization owner toggles agent_access=false: ALL POST /mcp calls fail immediately.

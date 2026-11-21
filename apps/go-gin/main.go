@@ -16,6 +16,21 @@ var startTime = time.Now()
 func main() {
 	r := gin.Default()
 
+	// Healthcheck probe (Scenario 08: returns 503 when SIMULATE_BAD_HEALTHCHECK=true)
+	r.GET("/healthz", func(c *gin.Context) {
+		if os.Getenv("SIMULATE_BAD_HEALTHCHECK") == "true" {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status": "unhealthy",
+				"reason": "SIMULATE_BAD_HEALTHCHECK=true",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"service": "go-gin",
+		})
+	})
+
 	// Root Index
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -101,11 +116,11 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"status":          "triggered",
-			"scenario":        "06-goroutine-leak",
-			"goroutines_spawned": count,
+			"status":                    "triggered",
+			"scenario":                  "06-goroutine-leak",
+			"goroutines_spawned":        count,
 			"current_active_goroutines": runtime.NumGoroutine(),
-			"message":         "Goroutines spawned and permanently leaked in memory.",
+			"message":                   "Goroutines spawned and permanently leaked in memory.",
 		})
 	})
 

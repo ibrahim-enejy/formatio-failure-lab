@@ -1,0 +1,14 @@
+--- a/apps/node-express/src/app/routes/lab/lab.controller.ts
++++ b/apps/node-express/src/app/routes/lab/lab.controller.ts
+@@ -183,6 +183,10 @@ export const triggerRegression = async (req: Request, res: Response) => {
+  * POST /api/lab/scenarios/14-secret-crash
+  */
+-export const triggerSecretCrash = async (_req: Request, _res: Response) => {
++export const triggerSecretCrash = async (_req: Request, res: Response) => {
+   const hasStripeKey = Boolean(process.env.STRIPE_SECRET_KEY);
+   const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
++  if (hasStripeKey && hasDatabaseUrl) {
++    return res.json({ status: 'ok', configured: ['STRIPE_SECRET_KEY', 'DATABASE_URL'] });
++  }
+   const err = new Error(
+     `PaymentGatewayConfigError: missing or invalid checkout signing webhook secret (STRIPE_SECRET_KEY present=${hasStripeKey}, DATABASE_URL present=${hasDatabaseUrl})`

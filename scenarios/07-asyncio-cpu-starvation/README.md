@@ -1,54 +1,40 @@
-# Scenario 07: Python Asyncio CPU Starvation (Synchronous Blocking in ASGI)
+# Scenario 07: Python asyncio CPU starvation (sync blocking in ASGI)
 
-> **Failure Classification:** Event Loop Starvation / GIL Saturation  
-> **Affected Framework:** Python (FastAPI / Starlette / Sanic / Tornado)  
-> **Difficulty:** Intermediate  
-
----
-
-## 1. Failure Anatomy
-
-In modern Python ASGI applications (FastAPI/Uvicorn), route handlers defined with `async def` run on a single main event loop thread. 
-
-When a developer inadvertently introduces CPU-heavy synchronous operations (e.g. `json.loads` on multi-megabyte payloads, heavy regex evaluation, image transforms, or non-async database drivers) inside an `async def` function, the entire ASGI event loop freezes for the duration of that computation:
-```python
-@router.post("/items")
-async def process_items():
-    # BLOCKING: This synchronous work freezes the single event loop!
-    for _ in range(10_000_000):
-        math.sqrt(12345)
-```
-
-During this stall:
-- All incoming HTTP requests to other endpoints wait in the socket buffer.
-- Orchestrator liveness probes (`/healthz`) fail.
-- Uvicorn workers fail to respond, appearing completely deadlocked.
+> **Track:** Observability (Lightweight OpenTelemetry, traces and alerts)  
+> **Failure classification:** Event loop starvation / GIL saturation  
+> **Affected framework:** Python (`apps/python-fastapi`)  
+> **Difficulty:** Intermediate
 
 ---
 
-## 2. Reproduction Steps
+## 1. Failure anatomy
 
-### Option A: Using the CLI Trigger Script
+In FastAPI/Uvicorn, `async def` handlers run on a single asyncio event loop. Running synchronous CPU-heavy work directly inside `async def` stalls every concurrent route and healthcheck until timeouts trip.
+
+---
+
+## 2. Reproduction steps
+
+### Option A: Using the CLI trigger script
 ```bash
 ./scenarios/07-asyncio-cpu-starvation/trigger.sh http://localhost:8000 6000
 ```
 
-### Option B: Direct cURL
+### Option B: Direct curl
 ```bash
-# Block event loop for 6 seconds
 curl -i -X POST "https://your-python-app.formatio.cloud/api/lab/scenarios/07-asyncio-cpu-starvation?ms=6000"
 ```
 
-In a separate terminal, execute a health check to observe the latency spike:
+Verify concurrent stall in another terminal:
 ```bash
-curl -i --max-time 3 https://your-python-app.formatio.cloud/api/lab/status
+curl -i --max-time 3 https://your-python-app.formatio.cloud/healthz
 ```
 
 ---
 
-## 3. What Happens on Traditional Infrastructure vs. Formatio
+## 3. Traditional APM vs. Formatio
 
-| Traditional APM Setup | Formatio Autonomous SRE |
+| Traditional APM setup | Formatio |
 | :--- | :--- |
-| Uvicorn worker heartbeat times out; Gunicorn/Uvicorn master kills the worker with `SIGKILL` without stack trace context. | **Formatio Event Loop Delay metrics correlate latency spike** directly to the CPU-intensive sync block. |
-| Engineer converts entire framework to multi-process or adds expensive EC2 instances. | **Formatio AI SRE opens a PR** wrapping the compute in `asyncio.to_thread` or switching from `async def` to regular `def` (which FastAPI executes in an external thread pool automatically). |
+| Uvicorn worker heartbeats time out and master kills the process with `SIGKILL`. | Railpack automatic `formatio-otel` startup preload captures the trace duration anomaly against the deployed SHA. |
+| Engineers add extra compute instances unnecessarily. | Built-in AI error advisor (works out of the box) and autonomous AI SRE open a fix PR moving CPU work to `asyncio.to_thread` or standard `def` (patch in [`solution.patch`](./solution.patch)). |

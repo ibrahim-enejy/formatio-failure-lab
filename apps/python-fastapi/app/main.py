@@ -1,13 +1,25 @@
+import os
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from app.routers import lab
 
 app = FastAPI(
     title="Formatio Failure Lab — Python/FastAPI",
-    description="Multi-framework architectural chaos lab for Formatio Autonomous SRE testing.",
-    version="1.0.0",
+    description="Multi-framework chaos lab for Formatio IDP, OpenTelemetry observability, built-in AI SRE, and Govern.",
+    version="2.0.0",
 )
 
 app.include_router(lab.router)
+
+
+@app.get("/healthz")
+async def healthz():
+    if os.getenv("SIMULATE_BAD_HEALTHCHECK") == "true":
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "reason": "SIMULATE_BAD_HEALTHCHECK=true"},
+        )
+    return {"status": "ok", "service": "python-fastapi"}
 
 
 @app.get("/")
