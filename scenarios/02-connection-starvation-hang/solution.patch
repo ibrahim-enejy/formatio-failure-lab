@@ -1,33 +1,26 @@
-diff --git a/apps/node-express/src/app/routes/article/article.controller.ts b/apps/node-express/src/app/routes/article/article.controller.ts
-index 36cafd5..180a1ac 100644
---- a/apps/node-express/src/app/routes/article/article.controller.ts
-+++ b/apps/node-express/src/app/routes/article/article.controller.ts
-@@ -255,11 +255,20 @@ export const triggerOOM = async (req: any, res: any) => {
-   }
- };
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -327,13 +327,16 @@
+ });
  
--// SABOTAGE 2: The Hanging Webhook (Connection Starvation)
-+// FIX: Enforce strict 2.5s upstream timeout and graceful 504 fallback
- export const triggerHang = async (req: any, res: any) => {
--  console.log("[Sabotage] Simulating 15-second 3rd-party API degradation...");
--  await new Promise((resolve) => setTimeout(resolve, 15000));
--  return res.json({ 
--    message: "Fraud API finally responded, but the client already disconnected." 
+ app.all('/api/lab/scenarios/02-hang', async (_req, res) => {
+-  console.log('[Sabotage] Simulating 15-second upstream webhook stall...');
+-  await sleep(15000);
+-  res.json({
+-    status: 'resolved',
+-    scenario: '02-connection-starvation-hang',
+-    message: 'Simulated 15-second upstream wait completed.',
 -  });
--};
-\ No newline at end of file
 +  const TIMEOUT_MS = 2500;
 +  try {
-+    const result = await Promise.race([
-+      new Promise((resolve) => setTimeout(resolve, 15000)),
-+      new Promise((_, reject) =>
-+        setTimeout(() => reject(new Error('Upstream timeout')), TIMEOUT_MS),
-+      ),
++    await Promise.race([
++      sleep(15000),
++      new Promise((_, reject) => setTimeout(() => reject(new Error('Upstream timeout')), TIMEOUT_MS)),
 +    ]);
-+    return res.json({ status: 'success', data: result });
-+  } catch (err: any) {
-+    return res.status(504).json({
-+      error: 'Upstream service timeout (degraded after 2.5s)',
-+    });
++    res.json({ status: 'ok', scenario: '02-connection-starvation-hang' });
++  } catch (_err) {
++    res.status(504).json({ error: 'Upstream service timeout (degraded after 2.5s)' });
 +  }
-+};
+ });
+ 
+ app.all('/api/lab/scenarios/05-pool-lockup', async (_req, res) => {

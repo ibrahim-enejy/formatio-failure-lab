@@ -1,43 +1,24 @@
-# Multi-stage production build for Node/Express Failure Lab App
-FROM node:20-alpine AS builder
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy dependency manifests
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# Copy Prisma schema and generate client
-COPY src/prisma ./src/prisma
-RUN npx prisma generate
-
-# Copy project files and build
-COPY . .
-RUN npx nx build api --configuration=production
-
-# Production runtime stage
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-ENV NODE_ENV=production
-ENV HOST=0.0.0.0
-ENV PORT=3000
-
-# Install production dependencies only
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-# Copy generated Prisma client from builder
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/src/prisma ./src/prisma
+COPY . .
 
-# Copy built app dist
-COPY --from=builder /app/dist/api ./dist/api
+# Formatio's intake serves OTLP/HTTP traces only; disabling metrics/logs exporters prevents 404 log noise.
+ENV PORT=3000 \
+    DATA_DIR=/data \
+    NODE_ENV=production \
+    OTEL_METRICS_EXPORTER=none \
+    OTEL_LOGS_EXPORTER=none \
+    OTEL_NODE_RESOURCE_DETECTORS=env,host,os,process,serviceinstance,container
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3000/healthz || exit 1
+  CMD node -e "fetch('http://127.0.0.1:3000/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
-CMD ["node", "dist/api/main.js"]
+# Exec node directly (not npm start) so SIGTERM flushes final OTLP spans cleanly.
+CMD ["node", "--require", "@opentelemetry/auto-instrumentations-node/register", "app.js"]

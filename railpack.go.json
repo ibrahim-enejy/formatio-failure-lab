@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "packages": {
+    "go": "1.24"
+  },
+  "steps": {
+    "build": {
+      "inputs": [
+        { "step": "packages:mise" },
+        { "local": true, "include": ["apps/go-gin"] }
+      ],
+      "commands": [
+        { "path": "/go/bin" },
+        "cd apps/go-gin && CGO_ENABLED=0 go build -o /app/bin/failure-lab-go ."
+      ]
+    }
+  },
+  "deploy": {
+    "inputs": [
+      { "step": "build", "include": ["/app/bin"] }
+    ],
+    "startCommand": "/app/bin/failure-lab-go"
+  }
+}

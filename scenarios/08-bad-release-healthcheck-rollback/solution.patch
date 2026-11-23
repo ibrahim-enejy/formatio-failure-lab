@@ -1,14 +1,14 @@
---- a/apps/node-express/src/app/routes/lab/lab.controller.ts
-+++ b/apps/node-express/src/app/routes/lab/lab.controller.ts
-@@ -29,13 +29,6 @@
-  * GET /healthz
-  */
- export const getHealthz = async (req: Request, res: Response) => {
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -92,13 +92,6 @@
+ 
+ // Scenario 08: returns 503 when SIMULATE_BAD_HEALTHCHECK=true
+ app.get('/healthz', (_req, res) => {
 -  if (process.env.SIMULATE_BAD_HEALTHCHECK === 'true') {
 -    return res.status(503).json({
 -      status: 'unhealthy',
 -      reason: 'SIMULATE_BAD_HEALTHCHECK=true',
--      tip: 'Use Formatio Rollback to restore the previous successful deployment.',
+-      tip: 'Use Formatio Roll back to restore the previous successful deployment.',
 -    });
 -  }
    return res.status(200).json({

@@ -1,20 +1,30 @@
---- a/apps/node-express/src/app/routes/lab/lab.controller.ts
-+++ b/apps/node-express/src/app/routes/lab/lab.controller.ts
-@@ -107,10 +107,13 @@
-   const durationMs = parseInt((req.query.ms as string) || '5000', 10);
-   console.log(`[Sabotage] Blocking Node.js event loop synchronously for ${durationMs}ms...`);
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -360,18 +360,21 @@
+   }, 250);
+ });
+ 
+-app.all('/api/lab/scenarios/04-event-loop-block', (req, res) => {
++app.all('/api/lab/scenarios/04-event-loop-block', async (req, res) => {
+   const durationMs = parseInt(String(req.query.ms || '5000'), 10);
+-  console.log(`[Sabotage] Blocking Node.js event loop synchronously for ${durationMs}ms...`);
    const start = Date.now();
 -  while (Date.now() - start < durationMs) {
--    // Busy loop starving all other incoming HTTP requests
 -    Math.random() * Math.random();
 -  }
-+  await new Promise<void>((resolve) => {
++  await new Promise((resolve) => {
 +    const step = () => {
 +      if (Date.now() - start >= durationMs) return resolve();
 +      setImmediate(step);
 +    };
 +    step();
 +  });
-   return res.json({
+   res.json({
      status: 'resolved',
      scenario: '04-event-loop-block',
+     blocked_ms: durationMs,
+-    message: `Event loop was blocked synchronously for ${durationMs}ms.`,
++    message: `Yielded event loop safely across slices for ${durationMs}ms.`,
+   });
+ });
+ 

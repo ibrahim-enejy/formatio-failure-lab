@@ -1,23 +1,4 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: failure-lab-postgres
-    environment:
-      POSTGRES_USER: formatio
-      POSTGRES_PASSWORD: formatio_secret_password
-      POSTGRES_DB: realworld
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U formatio -d realworld"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   node-express:
     build:
       context: ./apps/node-express
@@ -29,12 +10,39 @@ services:
       PORT: 3000
       NODE_ENV: production
       DATA_DIR: /data
-      DATABASE_URL: postgresql://formatio:formatio_secret_password@postgres:5432/realworld?schema=public
+      ORDERS_URL: http://go-gin:8080
+      GO_URL: http://go-gin:8080
+      DOWNSTREAM_URL: http://python-fastapi:8000
     volumes:
       - labdata:/data
     depends_on:
-      postgres:
-        condition: service_healthy
+      - go-gin
+      - python-fastapi
+
+  go-gin:
+    build:
+      context: ./apps/go-gin
+      dockerfile: Dockerfile
+    container_name: failure-lab-go-gin
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      PAYMENTS_URL: http://python-fastapi:8000
+      PYTHON_URL: http://python-fastapi:8000
+      DOWNSTREAM_URL: http://node-express:3000
+
+  python-fastapi:
+    build:
+      context: ./apps/python-fastapi
+      dockerfile: Dockerfile
+    container_name: failure-lab-python-fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      GO_URL: http://go-gin:8080
+      DOWNSTREAM_URL: http://go-gin:8080
 
   nextjs-15:
     build:
@@ -48,26 +56,5 @@ services:
       HOSTNAME: 0.0.0.0
       NODE_ENV: production
 
-  python-fastapi:
-    build:
-      context: ./apps/python-fastapi
-      dockerfile: Dockerfile
-    container_name: failure-lab-python-fastapi
-    ports:
-      - "8000:8000"
-    environment:
-      PORT: 8000
-
-  go-gin:
-    build:
-      context: ./apps/go-gin
-      dockerfile: Dockerfile
-    container_name: failure-lab-go-gin
-    ports:
-      - "8080:8080"
-    environment:
-      PORT: 8080
-
 volumes:
-  pgdata:
   labdata:

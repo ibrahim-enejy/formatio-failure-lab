@@ -1,11 +1,11 @@
---- a/apps/node-express/src/app/routes/lab/lab.controller.ts
-+++ b/apps/node-express/src/app/routes/lab/lab.controller.ts
-@@ -5,7 +5,7 @@
- import { calculateCheckoutTotal } from './discount.service';
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -11,7 +11,7 @@
+ const app = express();
+ app.use(express.json());
  
- const router = Router();
 -const EPHEMERAL_MARKER = '/tmp/formatio-ephemeral.json';
 +const EPHEMERAL_MARKER = path.join(process.env.DATA_DIR || '/data', 'formatio-marker-copy.json');
  
- function persistentMarkerPath(): string {
+ function persistentMarkerPath() {
    const dir = process.env.DATA_DIR || '/data';

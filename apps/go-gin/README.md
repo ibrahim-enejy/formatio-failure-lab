@@ -1,34 +1,15 @@
-# Formatio Failure Lab: Go / Gin Microservice
+# Failure Lab — Go (`net/http` + `otelhttp`, Stock OTel)
 
-> High-throughput Go REST microservice designed for diagnosing concurrency deadlocks, memory leaks, channel blocking, and unbounded goroutine starvation.
+Lean Go HTTP microservice instrumented via `go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp` and configured solely through Formatio's `OTEL_*` environment variables, covering Go concurrency/memory chaos, Automatic Fix PR fixtures, and multi-service trace cascades.
 
----
+## Deploy on Formatio
 
-## Quickstart
+- **Option A — Railpack (from repo root):** keep Directory empty and select `railpack.go.json`.
+- **Option B — Dockerfile:** set Directory to `apps/go-gin` and Dockerfile to `apps/go-gin/Dockerfile` on port **`8080`**.
+- Enable **Settings › Tracing → Enable tracing** before deploying.
 
-### Local Execution
-```bash
-go run main.go
-```
+### Mesh & Fix PR highlights
 
-### Docker
-```bash
-docker build -t formatio-failure-lab-go .
-docker run -p 8080:8080 formatio-failure-lab-go
-```
-
-### Deploy to Formatio
-1. Fork or push this repository to GitHub.
-2. In the [Formatio Dashboard](https://formatio.cloud/dashboard), select **New application** → choose this repo.
-3. Set **Directory** to `apps/go-gin`.
-4. Click **Deploy**. Formatio detects Go, compiles the binary, and injects runtime telemetry.
-
----
-
-## Live endpoints
-
-- `GET /healthz`: Readiness check (returns HTTP `503` when `SIMULATE_BAD_HEALTHCHECK=true`).
-- `GET /api/lab/status`: Live Go runtime telemetry (`Alloc`, `Sys`, `NumGoroutine`, GC statistics).
-- `POST /api/lab/scenarios/01-oom`: Unbounded slice allocations forcing container OOM killer.
-- `POST /api/lab/scenarios/02-hang`: 15-second upstream dependency hang.
-- `POST /api/lab/scenarios/06-goroutine-leak?count=50000`: Leaks 50,000 un-reclaimed goroutines blocked on an empty channel.
+- **Scenario 17 / 18 (`POST /orders`, `GET /api/dashboard`, `GET /internal/rates`):** set `PAYMENTS_URL=http://<python-app-name>:8000` (or `PYTHON_URL`).
+- **Scenario 12 Fix PR (`GET /ai-sre/shipping-total?pickup=1`):** triggers a clean nil-pointer panic inside `apps/go-gin/shipping_total.go`.
+- **Scenario 06 (`POST /api/lab/scenarios/06-goroutine-leak?count=50000`):** spawns blocked channel goroutines (`NumGoroutine` telemetry visible on `/api/lab/status`).

@@ -1,30 +1,28 @@
---- a/apps/node-express/src/app/routes/article/article.controller.ts
-+++ b/apps/node-express/src/app/routes/article/article.controller.ts
-@@ -242,17 +242,18 @@
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -313,16 +313,15 @@
  
- export default router;
- 
--// SABOTAGE 1: Unbounded Heap Allocation (OOM Kill)
-+// FIX: Bound memory allocation per request instead of growing an unbounded array
- export const triggerOOM = async (req: any, res: any) => {
--  console.log("[Sabotage] Starting massive heap allocation...");
--  const leakArray: string[] = [];
--  try {
--    while (true) {
--      leakArray.push(Buffer.alloc(10 * 1024 * 1024, 'X').toString());
--    }
--  } catch (err: any) {
--    return res.status(500).json({ error: err.message });
+ // Scenarios 01–05 & 14: Runtime stress + Govern /mcp redaction crash
+ app.all('/api/lab/scenarios/01-oom', (_req, res) => {
+-  console.log('[Sabotage] Allocating unbounded Buffer blocks to induce container OOM...');
+-  global.__formatioOomLeak = global.__formatioOomLeak || [];
+-  setInterval(() => {
+-    const block = Buffer.alloc(10 * 1024 * 1024, 1);
+-    global.__formatioOomLeak.push(block);
+-  }, 15);
+-  res.status(202).json({
+-    status: 'triggered',
+-    scenario: '01-heap-oom-crash',
+-    message: 'Unbounded 10MB Buffer allocation started.',
 +  const MAX_ALLOWED_CHUNKS = 5;
-+  const chunks: Buffer[] = [];
++  const chunks = [];
 +  for (let i = 0; i < MAX_ALLOWED_CHUNKS; i++) {
-+    chunks.push(Buffer.alloc(1024 * 1024, 'X'));
-   }
-+  return res.json({
++    chunks.push(Buffer.alloc(1024 * 1024, 1));
++  }
++  res.json({
 +    status: 'ok',
-+    allocated_mb: MAX_ALLOWED_CHUNKS,
-+    message: 'Memory bounded cleanly to avoid container OOM kill.',
-+  });
- };
++    allocated_mb: chunks.length,
++    message: 'Memory allocation bounded cleanly to avoid container OOM kill.',
+   });
+ });
  
- // SABOTAGE 2: The Hanging Webhook (Connection Starvation)

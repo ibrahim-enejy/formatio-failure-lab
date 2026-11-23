@@ -1,0 +1,12 @@
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -297,6 +297,9 @@
+   const suffix = req.query.healthy ? '?healthy=1' : '';
+   const response = await fetch(`${apiUrl}/api/dashboard${suffix}`);
+   const data = await response.json();
++  if (!response.ok) {
++    return res.status(502).json({ error: data.error || 'dashboard upstream unavailable' });
++  }
+   res.send(renderDashboard(data));
+ });
+ 

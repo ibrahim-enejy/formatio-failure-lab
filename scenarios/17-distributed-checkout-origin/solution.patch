@@ -1,0 +1,29 @@
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -259,18 +259,22 @@
+         { sku: 'mouse-02', price: '49.90', qty: 2 },
+       ];
+ 
+-  const total = tracer.startActiveSpan('price cart', (span) => {
++  let total = null;
++  let priceError = null;
++  tracer.startActiveSpan('price cart', (span) => {
+     try {
+-      return priceCart(cart);
++      total = priceCart(cart);
+     } catch (err) {
+-      // Intentional bug: records exception on span and passes total: null downstream.
++      priceError = err;
+       span.recordException(err);
+       span.setStatus({ code: SpanStatusCode.ERROR, message: err.message });
+-      return null;
+     } finally {
+       span.end();
+     }
+   });
++  if (priceError) {
++    return res.status(400).json({ error: priceError.name, message: priceError.message });
++  }
+ 
+   const response = await fetch(`${ordersUrl}/orders`, {
+     method: 'POST',

@@ -1,11 +1,33 @@
---- a/apps/node-express/src/app/routes/lab/discount.service.ts
-+++ b/apps/node-express/src/app/routes/lab/discount.service.ts
-@@ -22,7 +22,7 @@
-  */
- export function calculateCheckoutTotal(input: CheckoutInput): CheckoutResult {
-   const subtotalCents = Math.max(0, Math.round(input.amountCents ?? 4900));
--  const discountRate = input.coupon!.percentOff / 100;
-+  const discountRate = (input.coupon?.percentOff ?? 0) / 100;
-   const discountCents = Math.round(subtotalCents * discountRate);
+--- a/apps/node-express/discount.js
++++ b/apps/node-express/discount.js
+@@ -1,14 +1,12 @@
+ 'use strict';
+ 
+ function cartTotal(cart) {
+-  // Intentional bug for Automatic Fix PR testing: missing items crashes on empty carts.
+-  return cart.items.reduce((total, item) => total + item.cents, 0);
++  return (cart?.items || []).reduce((total, item) => total + item.cents, 0);
+ }
+ 
+ function calculateCheckoutTotal(order) {
+-  // Intentional regression for Scenario 12: dereferencing missing coupon throws TypeError.
+   const subtotal = Number(order.amountCents || 0);
+-  const pct = order.coupon.percentOff;
++  const pct = Number(order?.coupon?.percentOff || 0);
    return {
-     subtotalCents,
+     subtotalCents: subtotal,
+     discountPercent: pct,
+--- a/apps/go-gin/shipping_total.go
++++ b/apps/go-gin/shipping_total.go
+@@ -12,7 +12,9 @@
+ 		quote = nil
+ 	}
+ 	w.Header().Set("Content-Type", "application/json")
+-	// Intentional nil-pointer dereference for Automatic Fix PR testing on ?pickup=1.
+-	cents := quote.Cents
++	cents := 0
++	if quote != nil {
++		cents = quote.Cents
++	}
+ 	_ = json.NewEncoder(w).Encode(map[string]int{"shippingCents": cents})
+ }

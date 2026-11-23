@@ -1,13 +1,13 @@
---- a/apps/node-express/src/app/routes/lab/lab.controller.ts
-+++ b/apps/node-express/src/app/routes/lab/lab.controller.ts
-@@ -95,7 +95,9 @@
-       new Error(
-         'Formatio Lab Injected Error: Unhandled async database transaction timeout inside order reconciliation worker.'
-       )
+--- a/apps/node-express/app.js
++++ b/apps/node-express/app.js
+@@ -356,7 +356,9 @@
+   setTimeout(() => {
+     Promise.reject(
+       new Error('Formatio Lab Injected Error: Unhandled async database transaction timeout inside order reconciliation worker.')
 -    );
 +    ).catch((err) => {
 +      console.error('[Worker Safe Error Boundary]', err.message);
 +    });
    }, 250);
- };
+ });
  
