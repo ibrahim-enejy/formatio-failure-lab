@@ -18,9 +18,9 @@ Railpack preloads Node tracing for standard HTTP frameworks, while Next.js handl
 
 ## Deploy on Formatio
 
-1. Open **New application** in [Formatio Dashboard](https://formatio.cloud/dashboard).
-2. Select your forked `formatio-failure-lab` repo and set **Directory** to `apps/nextjs-15`.
-3. Set Networking port to `3000` (with **Tracing** enabled) and click **Deploy**.
+1. In [Formatio Dashboard](https://formatio.cloud/dashboard), open **Applications › New application**, select your forked `formatio-failure-lab` repo, keep **Railpack**, and click **Create application**.
+2. **Before clicking `Deploy`, open `Settings`:** set **Directory** to `apps/nextjs-15` (leave **Config file** blank) -> **Save**, and confirm **Tracing** is **Enabled**. *(For Dockerfile instead, set **Build context** to `apps/nextjs-15` and **Dockerfile** to `Dockerfile`.)*
+3. Open **Networking › Add domain › Platform subdomain**, set **Target port** to **`3000`**, save, and click **Deploy**.
 
 ## Local verification
 

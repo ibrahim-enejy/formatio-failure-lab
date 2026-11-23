@@ -4,9 +4,13 @@ Lean Express 5 service auto-instrumented via `@opentelemetry/auto-instrumentatio
 
 ## Deploy on Formatio
 
-- **Option A — Railpack (from repo root):** keep Directory empty and select `railpack.node.json`.
-- **Option B — Dockerfile:** set Directory to `apps/node-express` and Dockerfile to `apps/node-express/Dockerfile` on port **`3000`**.
-- Enable **Settings › Tracing → Enable tracing** before deploying.
+1. In [Formatio Dashboard](https://formatio.cloud/dashboard), open **Applications › New application**, name the app **`node-express`**, pick your forked `formatio-failure-lab` repository, set environment variables below, and click **Create application**.
+2. **Before clicking `Deploy`, open `Settings`:**
+   - **Option A — Railpack (default):** leave **Directory** blank and set **Config file** to `railpack.node.json` -> **Save**.
+   - **Option B — Dockerfile:** set **Build context** to `apps/node-express` and **Dockerfile** to `Dockerfile` -> **Save**.
+   - Confirm **Tracing** is **Enabled**.
+3. Open **Networking › Add domain › Platform subdomain**, enter a short lowercase name, set **Target port** to **`3000`**, and save.
+4. Click **Deploy**.
 
 ### Optional mesh environment variables
 

@@ -21,11 +21,16 @@ flowchart LR
     SRE --> Govern["4. Govern: /mcp 22 tools + secret redaction"]
 ```
 
-1. Fork this repository and deploy `apps/node-express` in [Formatio Dashboard](https://formatio.cloud/dashboard) (either select **`railpack.node.json`** from the repo root, OR set **Directory** to `apps/node-express` with Dockerfile).
-2. Enable **Organization › AI › Automatic** + **Automatic fix PRs** (works natively out of the box, zero API keys needed) and **Settings › Tracing**.
-3. Run the Golden Loop against your live service URL (or locally on `http://localhost:3000`):
+1. Fork this repository, open [Formatio Dashboard](https://formatio.cloud/dashboard), and click **Applications › New application**:
+   - **Step 1 (`Source`):** Enter application name **`node-express`**, pick your forked `formatio-failure-lab` repo, and click **Continue**.
+   - **Step 2 (`Build`):** Leave **`Railpack`** selected and continue through **Create application** *(this saves the app without deploying yet)*.
+   - **Before clicking `Deploy`:** open the app's **Settings** tab, leave **Directory** blank, set **Config file** to **`railpack.node.json`** -> **Save**, and confirm **Tracing** is **Enabled**.
+   - Open **Networking › Add domain › Platform subdomain**, enter a short lowercase name (for example `checkout-demo`), set **Target port** to **`3000`**, and save.
+   - Click **Deploy** and wait for `Successful`.
+2. Verify **Organization › AI** has **AI error advisor (`Automatic`)** and **Automatic fix PRs** turned on (works natively out of the box—no external AI keys needed).
+3. Run the Golden Loop from your **local terminal** against your deployed `https://...` URL *(no Formatio CLI login or token required)*:
    ```bash
-   ./scripts/simulate.sh --golden-loop --target https://your-app.formatio.cloud
+   ./scripts/simulate.sh --golden-loop --target https://your-node-express-domain.formatio.cloud
    ```
 4. Inspect all 4 products in Formatio:
    - **IDP:** Verify `/healthz` readiness gating, `/data` volume persistence, and 1-click exact-image **Roll back** on **Deployments**.
@@ -37,14 +42,23 @@ flowchart LR
 
 ## 3-service distributed trace mesh (Railpack or Dockerfile)
 
-Deploy **`node-express`**, **`go-gin`**, and **`python-fastapi`** into **one Formatio project** to run real cross-service OTel cascades (**Scenario 17** and **Scenario 18**) plus stock error-grouping routes (`/ok`, `/slow`, `/exception`, `/not-found/:id`, `/status-500`, `/crash`, `/downstream`):
+Because `formatio-failure-lab` is a monorepo, **Step 1 (`Source`)** of Formatio's **New application** wizard selects the same forked `formatio-failure-lab` repo for each service inside **one Formatio project**:
 
-| Application name | Port | Railpack config (repo root) | Dockerfile (folder / file) | Distributed mesh env vars |
+- **Use these exact lowercase app names:** **`node-express`**, **`go-gin`**, and **`python-fastapi`** so Formatio's private project DNS resolves `http://node-express:3000`, `http://go-gin:8080`, and `http://python-fastapi:8000` automatically.
+- **Add environment variables in Step 4 (`Environment`):** paste the per-service env vars from the table below before clicking **Create application**.
+- **Configure Settings before clicking `Deploy`:**
+  - **Railpack (default):** open **Settings**, leave **Directory** blank, set **Config file** to `railpack.node.json`, `railpack.go.json`, or `railpack.python.json` -> **Save**, confirm **Tracing** is **Enabled**, then click **Deploy**.
+  - **Dockerfile (alternative):** open **Settings**, set **Build context** to `apps/node-express`, `apps/go-gin`, or `apps/python-fastapi` and **Dockerfile** to `Dockerfile` -> **Save**, confirm **Tracing** is **Enabled**, then click **Deploy**.
+- **Public networking:** only **`node-express`** needs **Networking › Add domain › Platform subdomain** on **Target port `3000`**; `go-gin` and `python-fastapi` stay private inside the project.
+
+Deploy all three services into that single project to run real cross-service OTel cascades (**Scenario 17** and **Scenario 18**) plus stock error-grouping routes (`/ok`, `/slow`, `/exception`, `/not-found/:id`, `/status-500`, `/crash`, `/downstream`):
+
+| Application name | Port | Railpack `Config file` (leave `Directory` blank) | Dockerfile (`Build context` / `Dockerfile`) | Distributed mesh env vars |
 | :--- | :---: | :--- | :--- | :--- |
-| **`node-express`** | `3000` | `railpack.node.json` | `apps/node-express/Dockerfile` | `ORDERS_URL=http://go-gin:8080`, `GO_URL=http://go-gin:8080`, `DOWNSTREAM_URL=http://python-fastapi:8000` |
-| **`go-gin`** | `8080` | `railpack.go.json` | `apps/go-gin/Dockerfile` | `PAYMENTS_URL=http://python-fastapi:8000`, `PYTHON_URL=http://python-fastapi:8000`, `DOWNSTREAM_URL=http://node-express:3000` |
-| **`python-fastapi`** | `8000` | `railpack.python.json` | `apps/python-fastapi/Dockerfile` | `GO_URL=http://go-gin:8080`, `DOWNSTREAM_URL=http://go-gin:8080` |
-| **`nextjs-15`** | `3000` | Auto-detected in folder | `apps/nextjs-15/Dockerfile` | Standalone Next.js 15 App Router + `@formatio/otel-next` |
+| **`node-express`** | `3000` | `railpack.node.json` | `apps/node-express` / `Dockerfile` | `ORDERS_URL=http://go-gin:8080`, `GO_URL=http://go-gin:8080`, `DOWNSTREAM_URL=http://python-fastapi:8000` |
+| **`go-gin`** | `8080` | `railpack.go.json` | `apps/go-gin` / `Dockerfile` | `PAYMENTS_URL=http://python-fastapi:8000`, `PYTHON_URL=http://python-fastapi:8000`, `DOWNSTREAM_URL=http://node-express:3000` |
+| **`python-fastapi`** | `8000` | `railpack.python.json` | `apps/python-fastapi` / `Dockerfile` | `GO_URL=http://go-gin:8080`, `DOWNSTREAM_URL=http://go-gin:8080` |
+| **`nextjs-15`** | `3000` | Set **Directory** to `apps/nextjs-15` *(Config file blank)* | `apps/nextjs-15` / `Dockerfile` | Standalone Next.js 15 App Router + `@formatio/otel-next` |
 
 ---
 
@@ -93,6 +107,8 @@ Every scenario lives under [`scenarios/`](./scenarios) with an executable `trigg
 ---
 
 ## Local quickstart
+
+`docker compose up` runs the four services **locally on your machine** (`http://localhost:3000`) for offline reproduction—it does not deploy to Formatio. Once deployed on Formatio, run any `trigger.sh` or `simulate.sh` command from your **local terminal** against `node-express`'s public `https://...` URL (no Formatio login or token needed).
 
 ```bash
 git clone https://github.com/ibrahim-enejy/formatio-failure-lab.git

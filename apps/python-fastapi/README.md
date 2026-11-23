@@ -4,9 +4,12 @@ Lean FastAPI ASGI service auto-instrumented via `opentelemetry-instrument` (`ope
 
 ## Deploy on Formatio
 
-- **Option A — Railpack (from repo root):** keep Directory empty and select `railpack.python.json`.
-- **Option B — Dockerfile:** set Directory to `apps/python-fastapi` and Dockerfile to `apps/python-fastapi/Dockerfile` on port **`8000`**.
-- Enable **Settings › Tracing → Enable tracing** before deploying.
+1. In [Formatio Dashboard](https://formatio.cloud/dashboard), open **Applications › New application** inside the same project as `node-express`, name the app **`python-fastapi`**, pick your forked `formatio-failure-lab` repository, set environment variables below, and click **Create application**.
+2. **Before clicking `Deploy`, open `Settings`:**
+   - **Option A — Railpack (default):** leave **Directory** blank and set **Config file** to `railpack.python.json` -> **Save**.
+   - **Option B — Dockerfile:** set **Build context** to `apps/python-fastapi` and **Dockerfile** to `Dockerfile` -> **Save**.
+   - Confirm **Tracing** is **Enabled**.
+3. Keep `python-fastapi` private on port **`8000`** (no public domain needed for mesh scenarios) and click **Deploy**.
 
 ### Mesh endpoints
 

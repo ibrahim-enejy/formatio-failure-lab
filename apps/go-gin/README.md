@@ -4,9 +4,12 @@ Lean Go HTTP microservice instrumented via `go.opentelemetry.io/contrib/instrume
 
 ## Deploy on Formatio
 
-- **Option A — Railpack (from repo root):** keep Directory empty and select `railpack.go.json`.
-- **Option B — Dockerfile:** set Directory to `apps/go-gin` and Dockerfile to `apps/go-gin/Dockerfile` on port **`8080`**.
-- Enable **Settings › Tracing → Enable tracing** before deploying.
+1. In [Formatio Dashboard](https://formatio.cloud/dashboard), open **Applications › New application** inside the same project as `node-express`, name the app **`go-gin`**, pick your forked `formatio-failure-lab` repository, set environment variables below, and click **Create application**.
+2. **Before clicking `Deploy`, open `Settings`:**
+   - **Option A — Railpack (default):** leave **Directory** blank and set **Config file** to `railpack.go.json` -> **Save**.
+   - **Option B — Dockerfile:** set **Build context** to `apps/go-gin` and **Dockerfile** to `Dockerfile` -> **Save**.
+   - Confirm **Tracing** is **Enabled**.
+3. Keep `go-gin` private on port **`8080`** (no public domain needed for mesh scenarios) and click **Deploy**.
 
 ### Mesh & Fix PR highlights
 
