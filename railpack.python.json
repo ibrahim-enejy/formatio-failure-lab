@@ -11,7 +11,7 @@
       ],
       "commands": [
         "python -m venv /app/.venv",
-        "/app/.venv/bin/pip install --no-cache-dir -r apps/python-fastapi/requirements.txt"
+        "/app/.venv/bin/pip install --no-cache-dir -r python-fastapi/requirements.txt"
       ]
     }
   },
@@ -29,10 +29,10 @@
       },
       {
         "step": "build",
-        "include": ["/app/.venv", "/app/apps/python-fastapi"]
+        "include": ["/app/.venv", "/app/python-fastapi"]
       }
     ],
-    "startCommand": "sh -c 'cd /app/apps/python-fastapi && exec /app/.venv/bin/opentelemetry-instrument /app/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}'",
+    "startCommand": "sh -c 'cd /app/python-fastapi && exec /app/.venv/bin/opentelemetry-instrument /app/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}'",
     "variables": {
       "PYTHONUNBUFFERED": "1",
       "OTEL_TRACES_EXPORTER": "otlp_proto_http",

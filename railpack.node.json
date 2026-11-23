@@ -14,7 +14,7 @@
         }
       ],
       "commands": [
-        "cd apps/node-express && npm ci --omit=dev"
+        "cd node-express && npm ci --omit=dev"
       ]
     }
   },
@@ -33,10 +33,10 @@
       },
       {
         "step": "build",
-        "include": ["/app/apps/node-express"]
+        "include": ["/app/node-express"]
       }
     ],
-    "startCommand": "cd /app/apps/node-express && exec node --require @opentelemetry/auto-instrumentations-node/register app.js",
+    "startCommand": "cd /app/node-express && exec node --require @opentelemetry/auto-instrumentations-node/register app.js",
     "variables": {
       "NODE_ENV": "production",
       "DATA_DIR": "/data",

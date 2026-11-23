@@ -11,7 +11,7 @@
       ],
       "commands": [
         { "path": "/go/bin" },
-        "cd apps/go-gin && CGO_ENABLED=0 go build -o /app/bin/failure-lab-go ."
+        "cd go-gin && CGO_ENABLED=0 go build -o /app/bin/failure-lab-go ."
       ]
     }
   },
