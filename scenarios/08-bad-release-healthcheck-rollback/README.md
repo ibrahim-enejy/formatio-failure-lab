@@ -44,7 +44,7 @@ Formatio runs **start-first** rolling updates paired with healthcheck gating acr
 3. Click **Deploy / Redeploy** (and probe `/healthz` with `trigger.sh`).
    > **Builder note:** HTTP `/healthz` gating runs automatically on **Dockerfile** builds (via embedded `HEALTHCHECK`) or when `healthcheck_path: "/healthz"` is set via Formatio's HTTP API. On default **Railpack** builds without an explicit `healthcheck_path`, test rollout blocking by pushing a commit binding `HOST=127.0.0.1` or raising a startup exception instead.
 4. Watch Formatio surface `Failed` healthcheck status on **Deployments** alongside startup logs on **Logs › Runtime**.
-5. Clear `SIMULATE_BAD_HEALTHCHECK` (or revert the bind commit) and click **Rollback** on your earlier `Successful` Git deployment on **Deployments** (or call `/mcp` `rollback_application`).
+5. Clear `SIMULATE_BAD_HEALTHCHECK` (or revert the bind commit) and click **Roll back** on your earlier `Successful` Git deployment on **Deployments** (or call `/mcp` `rollback_application` to deploy the recorded image digest without rebuilding).
 
 ---
 
@@ -54,7 +54,7 @@ Formatio runs **start-first** rolling updates paired with healthcheck gating acr
 | :--- | :--- | :--- |
 | **Traffic protection** | Broken pod or task can enter target group unless custom readiness YAML is maintained per service | Start-first rollout with image/HTTP `/healthz` readiness gating built in |
 | **Debug loop** | Switch across Actions logs, CloudWatch, and cluster events | Commit SHA, **Build** logs, **Runtime** logs, and deployment status in one view |
-| **Recovery** | Re-run stale CI workflow or manually hunt last container tag (`sha-9f12...`) | 1-click **Rollback** (or MCP `rollback_application`) rebuilds the exact prior `Successful` commit |
+| **Recovery** | Re-run stale CI workflow or manually hunt last container tag (`sha-9f12...`) | 1-click **Roll back** (or MCP `rollback_application`) deploys the recorded image digest from the prior `Successful` deployment without rebuilding |
 
 ---
 
